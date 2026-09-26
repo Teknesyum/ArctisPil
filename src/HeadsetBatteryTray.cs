@@ -10,6 +10,13 @@ using System.Runtime.InteropServices;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
+[assembly: System.Reflection.AssemblyTitle(Uygulama.Ad)]
+[assembly: System.Reflection.AssemblyProduct(Uygulama.Ad)]
+[assembly: System.Reflection.AssemblyCompany("Teknesyum")]
+[assembly: System.Reflection.AssemblyVersion(Uygulama.Surum + ".0")]
+[assembly: System.Reflection.AssemblyFileVersion(Uygulama.Surum + ".0")]
+[assembly: System.Reflection.AssemblyInformationalVersion(Uygulama.Surum)]
+
 static class Hid
 {
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -96,6 +103,142 @@ static class Hid
     }
 }
 
+static class Bluetooth
+{
+    [StructLayout(LayoutKind.Sequential)]
+    struct Anahtar { public Guid G; public int Pid; }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct Bilgi { public int cbSize; public Guid Sinif; public int Ornek; public IntPtr R; }
+
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode)]
+    static extern IntPtr SetupDiGetClassDevs(IntPtr g, string en, IntPtr hwnd, int flags);
+    [DllImport("setupapi.dll", SetLastError = true)]
+    static extern bool SetupDiEnumDeviceInfo(IntPtr set, int i, ref Bilgi d);
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern bool SetupDiGetDevicePropertyW(IntPtr set, ref Bilgi d, ref Anahtar k, out int tip, byte[] buf, int size, out int req, int flags);
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern bool SetupDiGetDeviceInstanceId(IntPtr set, ref Bilgi d, System.Text.StringBuilder id, int size, out int req);
+    [DllImport("setupapi.dll")]
+    static extern bool SetupDiDestroyDeviceInfoList(IntPtr set);
+
+    static readonly string[] Profiller = { "{0000111E", "{0000110B", "{00001108" };
+
+    public static bool Pil(out string ad, out int yuzde, bool hepsi = false)
+    {
+        ad = null; yuzde = -1;
+        IntPtr set = SetupDiGetClassDevs(IntPtr.Zero, "BTHENUM", IntPtr.Zero, 0x6);
+        if (set == new IntPtr(-1)) return false;
+        try
+        {
+            Anahtar pil = new Anahtar { G = new Guid("104EA319-6EE2-4701-BD47-8DDBF425BBE5"), Pid = 2 };
+            Anahtar bagli = new Anahtar { G = new Guid("83DA6326-97A6-4088-9453-A1923F573B29"), Pid = 15 };
+            Anahtar isim = new Anahtar { G = new Guid("A45C254E-DF1C-4EFD-8020-67D146A850E0"), Pid = 14 };
+            byte[] b = new byte[512];
+            System.Text.StringBuilder id = new System.Text.StringBuilder(512);
+            HashSet<string> acik = new HashSet<string>();
+            List<Tuple<string, int, string>> adaylar = new List<Tuple<string, int, string>>();
+            Bilgi d = new Bilgi(); d.cbSize = Marshal.SizeOf(d);
+            for (int i = 0; SetupDiEnumDeviceInfo(set, i, ref d); i++)
+            {
+                int tip, req;
+                if (!SetupDiGetDeviceInstanceId(set, ref d, id, id.Capacity, out req)) continue;
+                string k = id.ToString().ToUpperInvariant();
+                int dv = k.IndexOf(@"\DEV_");
+                if (dv >= 0 && k.Length >= dv + 17)
+                {
+                    if (SetupDiGetDevicePropertyW(set, ref d, ref bagli, out tip, b, b.Length, out req, 0) && req > 0 && b[0] != 0) acik.Add(k.Substring(dv + 5, 12));
+                    continue;
+                }
+                if (!Profiller.Any(x => k.Contains(x))) continue;
+                if (!SetupDiGetDevicePropertyW(set, ref d, ref pil, out tip, b, b.Length, out req, 0) || req < 1 || b[0] > 100) continue;
+                int v = b[0];
+                int alt = k.LastIndexOf('_');
+                if (alt < 12) continue;
+                string n = SetupDiGetDevicePropertyW(set, ref d, ref isim, out tip, b, b.Length, out req, 0) ? System.Text.Encoding.Unicode.GetString(b, 0, req).TrimEnd('\0') : "";
+                foreach (string ek in new[] { " Hands-Free AG", " Hands-Free", " Stereo", " Avrcp Transport" }) if (n.EndsWith(ek)) n = n.Substring(0, n.Length - ek.Length);
+                adaylar.Add(Tuple.Create(k.Substring(alt - 12, 12), v, n));
+            }
+            foreach (var a in adaylar)
+            {
+                if (!hepsi && !acik.Contains(a.Item1)) continue;
+                yuzde = a.Item2;
+                ad = a.Item3 == "" ? "Bluetooth kulaklık" : a.Item3;
+                return true;
+            }
+        }
+        finally { SetupDiDestroyDeviceInfoList(set); }
+        return false;
+    }
+}
+
+static class HeadsetControl
+{
+    public const string Surum = "4.1.0";
+
+    static string Yol()
+    {
+        string yan = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "headsetcontrol.exe");
+        if (File.Exists(yan)) return yan;
+        using (Stream k = typeof(HeadsetControl).Assembly.GetManifestResourceStream("headsetcontrol.exe"))
+        {
+            if (k == null) return null;
+            string klasor = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Uygulama.Ad);
+            string yol = Path.Combine(klasor, "headsetcontrol-" + Surum + ".exe");
+            if (File.Exists(yol) && new FileInfo(yol).Length == k.Length) return yol;
+            Directory.CreateDirectory(klasor);
+            using (FileStream f = File.Create(yol)) k.CopyTo(f);
+            return yol;
+        }
+    }
+
+    public static string Calistir(string arg, int ms)
+    {
+        string yol = Yol();
+        if (yol == null) return null;
+        System.Diagnostics.ProcessStartInfo b = new System.Diagnostics.ProcessStartInfo(yol, arg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        using (System.Diagnostics.Process p = System.Diagnostics.Process.Start(b))
+        {
+            System.Threading.Tasks.Task<string> cikti = p.StandardOutput.ReadToEndAsync();
+            p.StandardError.ReadToEndAsync();
+            if (!p.WaitForExit(ms)) { try { p.Kill(); } catch { } return null; }
+            return cikti.Result;
+        }
+    }
+
+    public static bool Pil(out string ad, out int yuzde, out bool sarj)
+    {
+        ad = null; yuzde = -1; sarj = false;
+        return Coz(Calistir("-b -o json", 8000), out ad, out yuzde, out sarj);
+    }
+
+    public static bool Coz(string j, out string ad, out int yuzde, out bool sarj)
+    {
+        ad = null; yuzde = -1; sarj = false;
+        if (string.IsNullOrEmpty(j)) return false;
+        var kok = new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string, object>>(j);
+        object o;
+        if (!kok.TryGetValue("devices", out o) || !(o is System.Collections.ArrayList)) return false;
+        foreach (object x in (System.Collections.ArrayList)o)
+        {
+            var d = x as Dictionary<string, object>;
+            if (d == null || !d.TryGetValue("battery", out o)) continue;
+            var pil = o as Dictionary<string, object>;
+            if (pil == null) continue;
+            string durum = pil.ContainsKey("status") ? pil["status"] as string : "";
+            if (durum != "BATTERY_AVAILABLE" && durum != "BATTERY_CHARGING") continue;
+            int v = pil.ContainsKey("level") ? Convert.ToInt32(pil["level"]) : -1;
+            if (v < 0 || v > 100) continue;
+            yuzde = v;
+            sarj = durum == "BATTERY_CHARGING";
+            ad = d.ContainsKey("device") ? d["device"] as string : null;
+            if (string.IsNullOrEmpty(ad)) ad = "Kulaklık";
+            return true;
+        }
+        return false;
+    }
+}
+
 static class Ses
 {
     [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")]
@@ -141,8 +284,9 @@ static class Ses
 
 class Uygulama : ApplicationContext
 {
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.0";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    const string RunAd = "ArctisPil";
+    const string RunAd = Ad, EskiRunAd = "ArctisPil";
     static readonly Color Basari = ColorTranslator.FromHtml("#34d399");
     static readonly Color Uyari = ColorTranslator.FromHtml("#fbbf24");
     static readonly Color Tehlike = ColorTranslator.FromHtml("#ff54eb");
@@ -170,7 +314,7 @@ class Uygulama : ApplicationContext
     public Uygulama()
     {
         ui = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
-        logYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "ArctisPil.log");
+        logYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), Ad + ".log");
         durumYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "aktarma.txt");
         AcilistaGeriAl();
 
@@ -178,6 +322,7 @@ class Uygulama : ApplicationContext
         durumMenu = new ToolStripMenuItem("Bağlanıyor…") { Enabled = false };
         aktarmaMenu = new ToolStripMenuItem("Ses aktarma (20-80)", null, (s, e) => aktarmaMenu.Checked = !aktarmaMenu.Checked) { Checked = true };
         baslangicMenu = new ToolStripMenuItem("Windows ile başlat", null, (s, e) => Baslangic(!baslangicMenu.Checked));
+        m.Items.Add(new ToolStripMenuItem(Ad + " v" + Surum) { Enabled = false });
         m.Items.Add(durumMenu);
         m.Items.Add(new ToolStripMenuItem("Pili şimdi yenile", null, (s, e) => Sorgula()));
         m.Items.Add(new ToolStripSeparator());
@@ -192,7 +337,7 @@ class Uygulama : ApplicationContext
         m.Opening += (s, e) => baslangicMenu.Checked = BaslangicVar();
 
         tepsi.ContextMenuStrip = m;
-        tepsi.Text = "Arctis: bağlanıyor";
+        tepsi.Text = Ad + ": bağlanıyor";
         Ciz("?", Yazi);
         tepsi.Visible = true;
         panel = new SesPaneli();
@@ -240,14 +385,35 @@ class Uygulama : ApplicationContext
                     new Thread(() => Dinle(dugmeOkuyucu, olen)) { IsBackground = true }.Start();
                 }
                 Log("bağlandı");
+                yedekte = false; yedekSayac = 0;
+                ui.Post(_ => panel.Kisitli = false, null);
                 ui.Post(_ => Sorgula(), null);
                 Dinle(okuyucu, komut.C.InLen);
             }
-            catch (Exception e) { Log("bağlantı: " + e.Message); }
+            catch (Exception e) { if (!yedekte) Log("bağlantı: " + e.Message); }
             Kapat2();
-            ui.Post(_ => { durumMenu.Text = "Taban istasyonu yok"; tepsi.Text = "Arctis: bağlı değil"; Ciz("–", Yazi); }, null);
+            if (yedekSayac++ % 12 == 0) YedekBak();
             for (int i = 0; i < 50 && calisiyor; i++) Thread.Sleep(100);
         }
+    }
+
+    bool yedekte;
+    int yedekSayac;
+
+    void YedekBak()
+    {
+        string ad = null; int yuzde = -1; bool sarj = false;
+        bool var = false;
+        try { var = HeadsetControl.Pil(out ad, out yuzde, out sarj); } catch (Exception e) { Log("headsetcontrol: " + e.Message); }
+        if (!var) { sarj = false; var = Bluetooth.Pil(out ad, out yuzde); }
+        if (var && !yedekte) Log("yedek aygıt: " + ad);
+        yedekte = var;
+        ui.Post(_ =>
+        {
+            panel.Kisitli = true;
+            if (var) PilGoster(ad, yuzde, sarj);
+            else { durumMenu.Text = "Kulaklık bulunamadı"; tepsi.Text = Ad + ": kulaklık yok"; Ciz("–", Yazi); panel.PilAyarla(-1, "yok", Yazi); }
+        }, null);
     }
 
     void Kapat2()
@@ -307,7 +473,6 @@ class Uygulama : ApplicationContext
         if (sv != seviye || du != durum) Log(string.Format("pil: seviye {0}/8, durum 0x{1:X2}", sv, du));
         seviye = Math.Min(sv, 8); durum = du;
         int yuzde = seviye * 100 / 8;
-        string hal = du == 0x02 ? "şarjda" : du == 0x01 ? "kulaklık kapalı" : "";
         if (du == 0x01)
         {
             Ciz("–", Yazi);
@@ -316,18 +481,24 @@ class Uygulama : ApplicationContext
             durumMenu.Text = "Kulaklık kapalı";
             return;
         }
-        Color c = du == 0x02 ? Mavi : yuzde >= 50 ? Basari : yuzde >= 25 ? Uyari : Tehlike;
+        PilGoster("Arctis", yuzde, du == 0x02);
+    }
+
+    void PilGoster(string ad, int yuzde, bool sarj)
+    {
+        string hal = sarj ? "şarjda" : "";
+        Color c = sarj ? Mavi : yuzde >= 50 ? Basari : yuzde >= 25 ? Uyari : Tehlike;
         Ciz(yuzde.ToString(), c);
-        string metin = "Arctis pil: %" + yuzde + (hal != "" ? " (" + hal + ")" : "");
-        tepsi.Text = metin;
+        string metin = ad + " pil: %" + yuzde + (hal != "" ? " (" + hal + ")" : "");
+        tepsi.Text = metin.Length > 63 ? metin.Substring(0, 63) : metin;
         durumMenu.Text = metin;
         panel.PilAyarla(yuzde, hal, c);
-        if (du != 0x02 && yuzde <= 25 && !dusukUyarildi)
+        if (!sarj && yuzde <= 25 && !dusukUyarildi)
         {
             dusukUyarildi = true;
-            tepsi.ShowBalloonTip(5000, "Arctis pili azaldı", "Kalan: %" + yuzde + ". Yedek pili tak.", ToolTipIcon.Warning);
+            tepsi.ShowBalloonTip(5000, ad + " pili azaldı", "Kalan: %" + yuzde + ".", ToolTipIcon.Warning);
         }
-        if (yuzde > 25 || du == 0x02) dusukUyarildi = false;
+        if (yuzde > 25 || sarj) dusukUyarildi = false;
     }
 
     const int Ust = 11, Alt = 45;
@@ -366,7 +537,7 @@ class Uygulama : ApplicationContext
         catch (Exception e) { Log("aktarma: " + e.Message); }
     }
 
-    const string Depo = "https://github.com/Teknesyum/ArctisPil";
+    const string Depo = "https://github.com/Teknesyum/" + Ad;
 
     static void Git(string adres)
     {
@@ -422,6 +593,7 @@ class Uygulama : ApplicationContext
     {
         using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunAnahtar))
         {
+            if (k.GetValue(EskiRunAd) != null) k.DeleteValue(EskiRunAd);
             if (ac) k.SetValue(RunAd, "\"" + Application.ExecutablePath + "\"");
             else if (k.GetValue(RunAd) != null) k.DeleteValue(RunAd);
         }
@@ -454,7 +626,7 @@ class Uygulama : ApplicationContext
     static void Main()
     {
         bool yeni;
-        using (Mutex mx = new Mutex(true, "ArctisPil-tek", out yeni))
+        using (Mutex mx = new Mutex(true, Uygulama.Ad + "-tek", out yeni))
         {
             if (!yeni) return;
             Application.EnableVisualStyles();
@@ -522,6 +694,9 @@ class SesPaneli : Form
     readonly List<Oge> ogeler = new List<Oge>();
     readonly Oge pil, kul, win, anc, seffaf, mik;
     int ayrac, yukseklik, kulV = -1;
+    bool kisitli;
+
+    public bool Kisitli { get { return kisitli; } set { if (kisitli == value) return; kisitli = value; Yerlestir(); } }
     Oge surukle;
     DateTime kapanis;
     readonly System.Windows.Forms.Timer yenile = new System.Windows.Forms.Timer();
@@ -591,11 +766,13 @@ class SesPaneli : Form
 
     void Yerlestir()
     {
-        seffaf.Gizli = anc.Secili != 1;
+        kul.Gizli = anc.Gizli = mik.Gizli = kisitli;
+        seffaf.Gizli = kisitli || anc.Secili != 1;
+        ayrac = -10;
         int y = 18;
         foreach (Oge o in ogeler)
         {
-            if (o == anc) { ayrac = y - 6; y += 12; }
+            if (o == anc && !o.Gizli) { ayrac = y - 6; y += 12; }
             if (o.Gizli) continue;
             o.Y = y;
             if (o.Secenek == null) { o.Alan = new Rectangle(Kenar, y + 32, Genislik - 2 * Kenar, Bar); y += 58; }

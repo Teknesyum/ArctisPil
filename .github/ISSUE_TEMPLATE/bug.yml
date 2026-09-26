@@ -27,5 +27,5 @@ body:
     id: log
     attributes:
       label: Log
-      description: Paste the last lines of ArctisPil.log (next to ArctisPil.exe).
+      description: Paste the last lines of HeadsetBatteryTray.log (next to HeadsetBatteryTray.exe).
       render: text

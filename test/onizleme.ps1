@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-$asm = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\bin\ArctisPil.exe'))
+$asm = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\bin\HeadsetBatteryTray.exe'))
 $bf = [Reflection.BindingFlags]'NonPublic,Public,Instance'
 $tip = $asm.GetType('Uygulama')
 $u = [Runtime.Serialization.FormatterServices]::GetUninitializedObject($tip)
@@ -31,4 +31,8 @@ $w = $pt.GetField('win', $bf).GetValue($p); $w.GetType().GetField('Deger').SetVa
 $b = New-Object Drawing.Bitmap $p.Width, $p.Height
 $p.DrawToBitmap($b, (New-Object Drawing.Rectangle 0, 0, $p.Width, $p.Height))
 $b.Save((Join-Path $PSScriptRoot 'onizleme-panel.png'))
+$pt.GetProperty('Kisitli').SetValue($p, $true)
+$b = New-Object Drawing.Bitmap $p.Width, $p.Height
+$p.DrawToBitmap($b, (New-Object Drawing.Rectangle 0, 0, $p.Width, $p.Height))
+$b.Save((Join-Path $PSScriptRoot 'onizleme-panel-kisitli.png'))
 'ok'

@@ -2,10 +2,24 @@ name: Headset support request
 description: Ask for a headset that is not supported yet.
 labels: [device]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Most headsets are handled by the bundled [HeadsetControl](https://github.com/Sapd/HeadsetControl#supported-headsets). Check its list first; if your model is missing there, a request upstream helps every tool that uses it. Bluetooth headsets show their battery when Windows reports it.
   - type: input
     id: model
     attributes:
       label: Headset model
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection
+      options:
+        - USB dongle / base station
+        - Bluetooth
+        - USB cable
     validations:
       required: true
   - type: input

@@ -1,19 +1,27 @@
-# Plan: Multi-Brand Headsets
+# Plan: Multi-Brand Headsets (v0.3.0)
 
-Status: proposed, not started.
+Status: in progress.
+
+## Decisions
+
+- HeadsetControl is bundled: its Windows exe is embedded as a resource, extracted to `%LOCALAPPDATA%` on first run and called as a separate process. Its license text and source link ship next to it.
+- We do not write drivers for models outside HeadsetControl. Requests go to HeadsetControl upstream; our issue template points there. The popular-50 list (`docs/devices.csv`) documents coverage.
+- The app is renamed after the SEO research (`rapor/isim-seo.md`, gitignored).
+- Version is shown in the tray menu and the exe file properties.
 
 ## Layers
 
-1. **Direct HID** (current) — full control for devices we map ourselves: Arctis Nova Pro Wireless first.
-2. **HeadsetControl backend** — run `headsetcontrol -o json` as a separate process (~70 models: Logitech, SteelSeries, Corsair, HyperX, Razer, EPOS…). Battery, sidetone, chatmix, lights, inactive time where the device supports it. Shipped next to the exe as its own GPL-3.0 program; ArctisPil does not link it.
-3. **Windows Bluetooth battery** — `DEVPKEY_Bluetooth_Battery` and GATT Battery Service (0x180F) for any Bluetooth headset. Battery only.
+1. **Direct HID** — Arctis Nova Pro Wireless (full control, current code).
+2. **HeadsetControl** — `headsetcontrol -o json`, polled; battery, sidetone, chatmix, lights, inactive time, EQ preset where the device supports it.
+3. **Windows Bluetooth battery** — `DEVPKEY_Bluetooth_Battery` via SetupAPI for any paired Bluetooth headset. Battery only.
+
+The first layer that finds a device wins. The panel hides rows the device does not support.
 
 ## Code
 
-- `IKulaklik` interface: `Pil`, `Ses`, `Anc`, `Sidetone`, `Mikrofon`, each nullable; the panel hides rows the device does not support.
-- One class per layer; the first layer that finds a device wins.
+- `IKulaklik`: `Ad`, `Pil`, `Sarj`, nullable capabilities; one class per layer.
+- `SesPaneli` rows get a `Destek` flag; `Yerlestir` already skips hidden rows.
 
-## Open
+## Later: Peak Protection
 
-- Name: "ArctisPil" is brand-specific; a rename (repo and exe) is the owner's call.
-- HeadsetControl download and update path.
+Plan only, see `docs/plan-ses-koruma.md`.

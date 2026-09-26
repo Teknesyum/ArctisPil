@@ -1,18 +1,14 @@
-# ArctisPil
+# HeadsetBatteryTray
 
-Tray app for the SteelSeries Arctis Nova Pro Wireless base station (VID 1038, PID 12E0).
+Tray battery app for headsets; full panel for SteelSeries Arctis Nova Pro Wireless (VID 1038, PID 12E0).
 
-- `src/ArctisPil.cs` — whole app, .NET Framework 4 WinForms, single file.
-- `build.ps1` — compiles to `bin/ArctisPil.exe` with the framework csc (full reference paths; the MSIX pwsh cwd breaks bare refs).
-- `test/` — HID probes: `dinle.ps1` (dial listener), `komut-dene.ps1 -Komut 06-B0` (send one raw report, print reply).
-- `rapor/` (gitignored, Turkish) — HID command research with sources, similar-project survey.
+- `src/HeadsetBatteryTray.cs` — whole app, .NET Framework 4 WinForms, single file. `Uygulama.Ad`/`Surum` drive name, version, log, mutex, Run key (old `ArctisPil` key is removed).
+- `build.ps1` — framework csc → `bin/HeadsetBatteryTray.exe`; embeds `vendor/headsetcontrol.exe` as a resource when present.
+- `test/` — HID probes (`dinle.ps1`, `komut-dene.ps1`), previews, `hc-coz.ps1` (HC JSON), `bt-pil.ps1` (BT battery).
+- `docs/` — `plan.md`, `plan-ses-koruma.md` (Loudness Equalization toggle, plan only), `devices.csv` (popular 50).
+- `rapor/` (gitignored, Turkish) — research.
 
-HID (MI_04): commands are 64-byte reports to COL01 (0xFFC0); events `07 xx` come on COL02 (0xFF00).
-- Read `06 B0`: [6] battery 0-8, [8] transparency, [10] ANC mode, [15] 01 off / 02 charging / 08 on.
-- Read `06 20`: [3] volume 0 loud…56 silent, [17] mic, [18] sidetone (not shown). Set: `06 25 v`, `06 BD m`, `06 B9 l`, `06 37 l`; `06 09` saves to flash.
-- Never send `06 FD` (factory reset).
-
-Volume transfer 20-80: dial `07 25 v` with v<11 (>80%) or v>45 (<20%) → headset clamped back via `06 25`, the difference moves to Windows; turning back from a limit moves Windows toward 50% first; bars snap to 5%. `bin/aktarma.txt` is only a v0.1 leftover repair.
-`SesPaneli` rows are `Oge` items (bar or segment), laid out by `Yerlestir` (transparency hidden unless ANC mode 1); settings save 0.8 s after the last change.
-Tray digits: Bahnschrift Bold path stretched to 32x30; user preferred it over pixel blocks.
-Multi-brand plan: `docs/plan.md`.
+Battery order: Nova HID → HeadsetControl 4.1.0 (`-b -o json`, extracted to %LOCALAPPDATA%) → Windows BT battery DEVPKEY on BTHENUM profile nodes. Non-Nova sets `panel.Kisitli` (battery only).
+Nova HID (MI_04): 64-byte reports to COL01 (0xFFC0), events `07 xx` on COL02. `06 B0` status, `06 20` audio, set `06 25 v` / `06 BD m` / `06 B9 l` / `06 37 l`, `06 09` saves. Never send `06 FD`.
+Volume transfer 20-80: v<11 or v>45 clamps the headset and moves the rest to Windows; turning back moves Windows toward 50% first; bars snap to 5%.
+No own drivers for other brands: missing headsets go upstream to HeadsetControl.

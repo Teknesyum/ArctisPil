@@ -2,57 +2,51 @@
 
 [<img src="assets/badge-lang.tr.svg" alt="Türkçe seçili, switch to English" width="124" height="44">](README.md)
 
-# ArctisPil
+# HeadsetBatteryTray
 
-Arctis Nova Pro Wireless için tepsi kontrolü.
+Kablolu, kablosuz ve Bluetooth kulaklıklar için Windows tepsisinde kulaklık pili.
 
 | Ölçü | Değer |
 |---|---|
-| İncelenen benzer proje | 37 |
-| Kullanılan HID komutu, her biri 2+ açık kaynakta | 7 |
-| Gerçek cihazda denenen komut (PID 12E0) | 3 (`06 B0`, `06 20`, `06 25`) |
+| İncelenen popüler kulaklık ([liste](docs/devices.csv)) | 50 |
+| Gömülü HeadsetControl ile pil | 50'de 29 |
+| Doğrudan HID ile tam panel (ses, ANC, mikrofon) | Arctis Nova Pro Wireless |
 | Bağımlılık | 0 (.NET Framework 4, Windows ile gelir) |
 
 ## Nedir
 
-ArctisPil, SteelSeries Arctis Nova Pro Wireless taban istasyonu için tek parça bir Windows tepsi programıdır. Tepsi simgesi pil yüzdesini gösterir. Sol tık bir panel açar: pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık (yalnız şeffaf modda görünür) ve mikrofon seviyesi; pil dışındaki her satır panelden değiştirilebilir. Taban istasyonuyla HID üzerinden konuşur, SteelSeries GG'nin açık olmasına gerek yoktur.
+HeadsetBatteryTray tek bir Windows tepsi programıdır. Tepsi simgesi kulaklık pilini sayı olarak gösterir; renk seviyeye göre değişir, şarjda mavidir, %25'te uyarır. Sol tık paneli açar.
 
-## Bunu SteelSeries GG Zaten Yapmıyor Mu?
+Pili sırayla üç yoldan okur: SteelSeries Arctis Nova Pro Wireless için doğrudan HID, yaklaşık 40 kablolu ve dongle'lı kulaklık için (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze ve diğerleri) gömülü [HeadsetControl](https://github.com/Sapd/HeadsetControl), Bluetooth kulaklıklar için Windows'un Bluetooth pil değeri. Üretici yazılımının açık olması gerekmez.
 
-GG bunların hepsini ve fazlasını yapar: Sonar, uygulama başına karışım, EQ düzenleme, firmware güncellemesi. ArctisPil'in eklediği:
+## Arctis Nova Pro Wireless Paneli
 
-- **Tepside pil**, sayı olarak; seviyeye göre renkli, şarjda mavi, %25'te uyarı.
-- **İki ses tek panelde.** Kulaklık sesi ile Windows sesi yan yana; ikisi de sürüklenir ya da tekerlekle değişir.
-- **Ses aktarma (20-80).** Kulaklık %20 ile %80 arasında kalır. Düğme %80'i geçerse kulaklık %80'e döner, fazlası Windows sesine eklenir; %20'nin altına inerse kulaklık %20'ye döner, eksik Windows sesinden düşer. Geri dönüşte önce Windows değişir: %80'den aşağı çevirince Windows %50'ye inene kadar kulaklık %80'de kalır, %20'den yukarı çevirince Windows %50'ye çıkar, sonra kulaklık oynar.
-- **Yuvarlak sayılar.** İki ses çubuğu da sürüklemede ve tekerlekte %5 adımlara oturur.
-- **Arka plan paketi yok.** Tek 30 KB exe, servis yok, hesap yok.
+Nova Pro tam paneli alır: pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık (yalnız şeffaf modda) ve mikrofon seviyesi.
 
-## Özellikler
+- **Ses aktarımı (20-80).** Kulaklık %20 ile %80 arasında kalır. Tekerlek %80'i geçince fazlası Windows'a gider; %20'nin altında fark Windows'tan düşer. Geri dönüşte önce Windows %50'ye doğru hareket eder, sonra kulaklık izler.
+- **Yuvarlak sayılar.** İki ses çubuğu da %5 adımlara oturur.
+- **Cihaza kaydedilir.** Değişiklikler son dokunuştan 0,8 sn sonra baz istasyonuna yazılır, kapatıp açınca kaybolmaz.
 
-- **Pil simgesi** — yüzde tepsi simgesine çizilir, dakikada bir ve her kulaklık olayında yenilenir.
-- **Kulaklık sesi** — açılışta okunur, düğmeyi izler, panelden ayarlanır (`06 25`).
-- **Gürültü engelleme** — Kapalı / Şeffaf / ANC, ve şeffaflık seviyesi 1-10.
-- **Mikrofon seviyesi** — 1-10.
-- **Ayarlar cihaza kaydedilir** — son değişiklikten 0,8 sn sonra taban istasyonuna yazılır (`06 09`), güç kesilince kaybolmaz.
+Diğer kulaklıklar yalnız pil panelini alır.
 
-## Yapmadıkları
+## Ne Yapmaz
 
-- EQ düzenleme, Sonar, ChatMix kontrolü, firmware güncellemesi yok.
-- Yalnız Arctis Nova Pro Wireless PC taban istasyonu (VID 1038, PID 12E0) destekleniyor. Diğer kulaklıklar planda, bkz. [istek şablonu](../../issues/new?template=device.yml).
-- Fabrika ayarı komutunu (`06 FD`) asla göndermez.
+- EQ düzenleme, Sonar, ChatMix, firmware güncelleme yok.
+- Başka markalar için kendi sürücüsü yok. HeadsetControl'ün tanımadığı bir kulaklığı [oraya istemek](https://github.com/Sapd/HeadsetControl/issues) en iyisidir; onu kullanan her araç kazanır. [Bize de yazabilirsiniz](../../issues/new?template=device.yml).
+- Nova fabrika ayarı komutunu (`06 FD`) asla göndermez.
 - Yalnız Windows.
 
 ## Kurulum
 
-`ArctisPil.exe`'yi [son sürümden](../../releases/latest) indirip çalıştır. Kendini başlangıca ekler; istemezsen sağ tık menüsünde "Windows ile başlat" işaretini kaldır.
+[Son sürümden](../../releases/latest) `HeadsetBatteryTray.exe` dosyasını indirip çalıştırın. Kendini başlangıca ekler; durdurmak için sağ tık menüsünde "Windows ile başlat" işaretini kaldırın. Sürüm, sağ tık menüsünün en üstünde ve exe'nin dosya özelliklerinde yazar.
 
 ## Nasıl Çalışır
 
-Taban istasyonu üreticiye özel bir HID arayüzü açar (arayüz 4). Komutlar `0xFFC0` koleksiyonuna `06` ile başlayan 64 baytlık raporlar olarak gider; istenmeden gelen olaylar `0xFF00` üzerinden `07` ile başlar.
+Nova baz istasyonu üreticiye özel bir HID arayüzü sunar (arayüz 4). Komutlar `0xFFC0` koleksiyonuna `06` ile başlayan 64 baytlık raporlar olarak gider; olaylar `0xFF00` üzerinden `07` ile başlayarak gelir.
 
 | Komut | Anlamı |
 |---|---|
-| `06 B0` | durum: pil `[6]`, kulaklık hali `[15]`, şeffaflık `[8]`, ANC modu `[10]` |
+| `06 B0` | durum: pil `[6]`, kulaklık durumu `[15]`, şeffaflık `[8]`, ANC modu `[10]` |
 | `06 20` | ses durumu: ses `[3]`, mikrofon `[17]` |
 | `06 25 v` | kulaklık sesi, 0 = en yüksek, 56 = sessiz |
 | `06 BD m` | 0 kapalı, 1 şeffaf, 2 ANC |
@@ -60,9 +54,9 @@ Taban istasyonu üreticiye özel bir HID arayüzü açar (arayüz 4). Komutlar `
 | `06 37 l` | mikrofon seviyesi 1-10 |
 | `06 09` | ayarları cihaza kaydet |
 
-Düğme dışındaki her `07 xx` olayı yeni bir `06 B0` / `06 20` okuması başlatır; kulaklıktaki ANC tuşuna basınca panel de değişir.
+Nova yoksa dakikada bir bakar: önce `headsetcontrol -b -o json`, sonra Windows'un Hands-Free cihazlar için tuttuğu Bluetooth pil değeri.
 
-## Program Ne Yaptığını Gösterir
+## Program Ne Yaptığını Gösteriyor
 
 ![Panel: pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık ve mikrofon satırları.](assets/panel.png)
 
@@ -72,11 +66,15 @@ Düğme dışındaki her `07 xx` olayı yeni bir `06 B0` / `06 20` okuması baş
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Programın tamamı `src/ArctisPil.cs`. `test/komut-dene.ps1 -Komut 06-B0` tek bir ham rapor gönderir ve cevabı yazar. `test/onizleme.ps1` simgeyi ve paneli PNG'ye çizer.
+Programın tamamı `src/HeadsetBatteryTray.cs`. `build.ps1`, `vendor/headsetcontrol.exe` varsa onu gömer. `test/komut-dene.ps1 -Komut 06-B0` tek bir ham rapor gönderir; `test/onizleme.ps1` simgeyi ve panelleri PNG'ye çizer; `test/hc-coz.ps1` ve `test/bt-pil.ps1` HeadsetControl ve Bluetooth okuyucularını dener.
+
+## Üçüncü Taraf Yazılım
+
+Sürüm dosyaları, Denis Arnst ve katkıcılarının [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 sürümünü değiştirilmeden içerir, lisansı GPL-3.0'dır. Ayrı bir program olarak çalıştırılır; kaynağı yukarıdaki bağlantıdadır.
 
 ## Katkı
 
-Önce issue aç: [hata bildirimi](../../issues/new?template=bug.yml) ya da [kulaklık desteği isteği](../../issues/new?template=device.yml). PR'lar küçük olsun. Depo dili İngilizce. Katkılar proje lisansı altında kabul edilir. ArctisPil işine yarıyorsa [sponsor olmak](https://github.com/sponsors/Teknesyum) sürmesini sağlar.
+Önce bir issue açın: [hata bildirimi](../../issues/new?template=bug.yml) ya da [kulaklık desteği isteği](../../issues/new?template=device.yml). Pull request'leri küçük tutun. Depo dili İngilizcedir. Katkılar proje lisansı altında kabul edilir. HeadsetBatteryTray size zaman kazandırıyorsa [destek olmak](https://github.com/sponsors/Teknesyum) sürmesini sağlar.
 
 ## Lisans
 

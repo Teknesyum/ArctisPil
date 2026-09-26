@@ -2,53 +2,47 @@
 
 [<img src="assets/badge-lang.svg" alt="English selected, switch to Türkçe" width="124" height="44">](README.tr.md)
 
-# ArctisPil
+# HeadsetBatteryTray
 
-Tray control for Arctis Nova Pro Wireless.
+Headset battery in the Windows tray, for wired, wireless and Bluetooth headsets.
 
 | Measure | Value |
 |---|---|
-| Similar projects surveyed | 37 |
-| HID commands used, each backed by 2+ public sources | 7 |
-| Commands checked on real hardware (PID 12E0) | 3 (`06 B0`, `06 20`, `06 25`) |
+| Popular headsets surveyed ([list](docs/devices.csv)) | 50 |
+| Battery via bundled HeadsetControl | 29 of 50 |
+| Full panel (volume, ANC, mic) over direct HID | Arctis Nova Pro Wireless |
 | Dependencies | 0 (.NET Framework 4, ships with Windows) |
 
 ## What It Is
 
-ArctisPil is a single Windows tray program for the SteelSeries Arctis Nova Pro Wireless base station. The tray icon shows the battery percentage. A left click opens a panel with the battery, headset volume, Windows volume, noise cancelling, transparency (shown only in transparency mode) and microphone level; every row except the battery can be changed from the panel. It talks to the base station over HID and does not need SteelSeries GG running.
+HeadsetBatteryTray is a single Windows tray program. The tray icon shows the headset battery as a number, colored by level, blue while charging, with a warning at 25%. A left click opens a panel.
 
-## Doesn't SteelSeries GG Already Do This?
+It reads the battery three ways, in order: direct HID for the SteelSeries Arctis Nova Pro Wireless, the bundled [HeadsetControl](https://github.com/Sapd/HeadsetControl) for about 40 wired and dongle headsets (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze and more), and the Windows Bluetooth battery value for Bluetooth headsets. No vendor suite needs to run.
 
-GG does all of this and much more: Sonar, per-app mixing, EQ editing, firmware updates. ArctisPil adds:
+## Arctis Nova Pro Wireless Panel
 
-- **Battery in the tray** as a number, colored by level, blue while charging, with a warning at 25%.
-- **One panel for both volumes.** The headset volume and the Windows volume sit next to each other; both can be dragged or scrolled.
-- **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the headset is set back to 80% while the extra points go to Windows; below 20% the headset returns to 20% and the difference comes off Windows. On the way back Windows moves first: turning down from 80% lowers Windows until it reaches 50%, turning up from 20% raises it to 50%, then the headset follows.
-- **Round numbers.** Both volume bars snap to 5% steps on drag and wheel.
-- **No background suite.** One 30 KB exe, no services, no account.
+The Nova Pro gets the full panel: battery, headset volume, Windows volume, noise cancelling, transparency (only in transparency mode) and microphone level.
 
-## Features
+- **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the extra points go to Windows; below 20% the difference comes off Windows. On the way back Windows moves first, toward 50%, then the headset follows.
+- **Round numbers.** Both volume bars snap to 5% steps.
+- **Saved to the device.** Changes are written to the base station 0.8 s after the last change, so they survive a power cycle.
 
-- **Battery icon** — percentage drawn in the tray icon, refreshed every minute and on every headset event.
-- **Headset volume** — read at start, follows the dial, settable from the panel (`06 25`).
-- **Noise cancelling** — Off / Transparency / ANC, and the transparency level 1-10.
-- **Microphone level** — 1-10.
-- **Settings saved to the device** — changes are written to the base station 0.8 s after the last change (`06 09`), so they survive a power cycle.
+Other headsets get the battery panel only.
 
 ## What It Does Not Do
 
-- No EQ editing, no Sonar, no ChatMix control, no firmware update.
-- Only the Arctis Nova Pro Wireless PC base station (VID 1038, PID 12E0) is supported. Other headsets are planned, see [issue template](../../issues/new?template=device.yml).
-- It never sends the factory reset command (`06 FD`).
+- No EQ editing, no Sonar, no ChatMix, no firmware update.
+- No drivers of its own for other brands. A headset HeadsetControl does not know is best [requested upstream](https://github.com/Sapd/HeadsetControl/issues); that helps every tool built on it. You can also [tell us](../../issues/new?template=device.yml).
+- It never sends the Nova factory reset command (`06 FD`).
 - Windows only.
 
 ## Install
 
-Download `ArctisPil.exe` from the [latest release](../../releases/latest) and run it. It adds itself to startup; untick "Windows ile başlat" in the right-click menu to stop that.
+Download `HeadsetBatteryTray.exe` from the [latest release](../../releases/latest) and run it. It adds itself to startup; untick "Windows ile başlat" in the right-click menu to stop that. The version is shown at the top of the right-click menu and in the exe's file properties.
 
 ## How It Works
 
-The base station exposes a vendor HID interface (interface 4). Commands go to the `0xFFC0` collection as 64-byte reports starting with `06`; unsolicited events arrive on `0xFF00` starting with `07`.
+The Nova base station exposes a vendor HID interface (interface 4). Commands go to the `0xFFC0` collection as 64-byte reports starting with `06`; events arrive on `0xFF00` starting with `07`.
 
 | Command | Meaning |
 |---|---|
@@ -60,7 +54,7 @@ The base station exposes a vendor HID interface (interface 4). Commands go to th
 | `06 37 l` | microphone level 1-10 |
 | `06 09` | save settings to the device |
 
-Any `07 xx` event other than the dial triggers a fresh `06 B0` / `06 20` read, so a press of the ANC button on the headset shows up in the panel.
+Without a Nova, it checks once a minute: `headsetcontrol -b -o json` first, then the Bluetooth battery property that Windows keeps for Hands-Free devices.
 
 ## Program Shows What It Does
 
@@ -72,11 +66,15 @@ Any `07 xx` event other than the dial triggers a fresh `06 B0` / `06 20` read, s
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-`src/ArctisPil.cs` is the whole program. `test/komut-dene.ps1 -Komut 06-B0` sends one raw report and prints the reply. `test/onizleme.ps1` renders the icon and the panel to PNG.
+`src/HeadsetBatteryTray.cs` is the whole program. `build.ps1` embeds `vendor/headsetcontrol.exe` when present. `test/komut-dene.ps1 -Komut 06-B0` sends one raw report; `test/onizleme.ps1` renders the icon and panels to PNG; `test/hc-coz.ps1` and `test/bt-pil.ps1` check the HeadsetControl and Bluetooth readers.
+
+## Third-Party Software
+
+Release builds bundle [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 by Denis Arnst and contributors, unmodified, licensed GPL-3.0. It is run as a separate program; its source is at the link above.
 
 ## Contributing
 
-Open an issue first: [bug report](../../issues/new?template=bug.yml) or [headset support request](../../issues/new?template=device.yml). Keep pull requests small. The repository language is English. Contributions are accepted under the project license. If ArctisPil saves you time, [sponsoring](https://github.com/sponsors/Teknesyum) keeps it going.
+Open an issue first: [bug report](../../issues/new?template=bug.yml) or [headset support request](../../issues/new?template=device.yml). Keep pull requests small. The repository language is English. Contributions are accepted under the project license. If HeadsetBatteryTray saves you time, [sponsoring](https://github.com/sponsors/Teknesyum) keeps it going.
 
 ## License
 

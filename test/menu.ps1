@@ -1,6 +1,6 @@
 ﻿$ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-$asm = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\bin\ArctisPil.exe'))
+$asm = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\bin\HeadsetBatteryTray.exe'))
 $m = New-Object System.Windows.Forms.ContextMenuStrip
 $m.Renderer = [Activator]::CreateInstance($asm.GetType('MenuTemasi'))
 $m.ForeColor = [Drawing.Color]::White
