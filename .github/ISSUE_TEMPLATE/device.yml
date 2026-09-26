@@ -1,0 +1,24 @@
+name: Headset support request
+description: Ask for a headset that is not supported yet.
+labels: [device]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Headset model
+    validations:
+      required: true
+  - type: input
+    id: ids
+    attributes:
+      label: USB IDs
+      description: Device Manager > the headset's HID entry > Details > Hardware Ids, e.g. VID_1038&PID_12E0.
+  - type: checkboxes
+    id: features
+    attributes:
+      label: What you want to see
+      options:
+        - label: Battery
+        - label: Volume
+        - label: ANC / transparency
+        - label: Sidetone

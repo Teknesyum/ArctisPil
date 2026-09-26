@@ -1,0 +1,31 @@
+name: Bug report
+description: Something does not work with your headset.
+labels: [bug]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Headset model
+      description: Brand and model, e.g. SteelSeries Arctis Nova Pro Wireless (PC base station).
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: e.g. Windows 11 23H2.
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log
+      description: Paste the last lines of ArctisPil.log (next to ArctisPil.exe).
+      render: text

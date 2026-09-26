@@ -1,0 +1,9 @@
+bin/
+tmp/
+trash/
+rapor/
+.claude/
+test/*.log
+test/*.txt
+test/font-*.png
+test/onizleme-*.png
