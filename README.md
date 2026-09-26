@@ -23,7 +23,7 @@ GG does all of this and much more: Sonar, per-app mixing, EQ editing, firmware u
 
 - **Battery in the tray** as a number, colored by level, blue while charging, with a warning at 25%.
 - **One panel for both volumes.** The headset volume and the Windows volume sit next to each other; both can be dragged or scrolled.
-- **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the headset is set back to 80% while the extra points go to Windows; below 20% the headset returns to 20% and the difference comes off Windows.
+- **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the headset is set back to 80% while the extra points go to Windows; below 20% the headset returns to 20% and the difference comes off Windows. On the way back Windows moves first: turning down from 80% lowers Windows until it reaches 50%, turning up from 20% raises it to 50%, then the headset follows.
 - **Round numbers.** Both volume bars snap to 5% steps on drag and wheel.
 - **No background suite.** One 30 KB exe, no services, no account.
 

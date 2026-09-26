@@ -23,7 +23,7 @@ GG bunların hepsini ve fazlasını yapar: Sonar, uygulama başına karışım, 
 
 - **Tepside pil**, sayı olarak; seviyeye göre renkli, şarjda mavi, %25'te uyarı.
 - **İki ses tek panelde.** Kulaklık sesi ile Windows sesi yan yana; ikisi de sürüklenir ya da tekerlekle değişir.
-- **Ses aktarma (20-80).** Kulaklık %20 ile %80 arasında kalır. Düğme %80'i geçerse kulaklık %80'e döner, fazlası Windows sesine eklenir; %20'nin altına inerse kulaklık %20'ye döner, eksik Windows sesinden düşer.
+- **Ses aktarma (20-80).** Kulaklık %20 ile %80 arasında kalır. Düğme %80'i geçerse kulaklık %80'e döner, fazlası Windows sesine eklenir; %20'nin altına inerse kulaklık %20'ye döner, eksik Windows sesinden düşer. Geri dönüşte önce Windows değişir: %80'den aşağı çevirince Windows %50'ye inene kadar kulaklık %80'de kalır, %20'den yukarı çevirince Windows %50'ye çıkar, sonra kulaklık oynar.
 - **Yuvarlak sayılar.** İki ses çubuğu da sürüklemede ve tekerlekte %5 adımlara oturur.
 - **Arka plan paketi yok.** Tek 30 KB exe, servis yok, hesap yok.
 

@@ -334,20 +334,34 @@ class Uygulama : ApplicationContext
 
     void DugmeGeldi(int v)
     {
+        int once = dugme;
         dugme = v;
         panel.Dugme = v;
-        if (!aktarmaMenu.Checked || (v >= Ust && v <= Alt)) return;
+        if (!aktarmaMenu.Checked) return;
         try
         {
             float win = Ses.Seviye();
-            int sinir = v < Ust ? Ust : Alt;
-            float fark = (sinir - v) / 56f;
-            if ((fark > 0 && win >= 0.995f) || (fark < 0 && win <= 0.005f)) return;
-            float yeni = Math.Max(0f, Math.Min(1f, (float)Math.Round((win + fark) * 100) / 100f));
-            Ses.Ayarla(yeni);
-            Gonder(0x06, 0x25, (byte)sinir);
-            dugme = sinir;
-            panel.Dugme = sinir;
+            int hedef = v;
+            if (once >= 0 && v > once && once <= Ust && win > 0.505f)
+            {
+                float fark = (v - once) / 56f, al = Math.Min(fark, win - 0.5f);
+                win -= al;
+                hedef = once + (int)Math.Round((fark - al) * 56);
+            }
+            else if (once >= 0 && v < once && once >= Alt && win < 0.495f)
+            {
+                float fark = (once - v) / 56f, ver = Math.Min(fark, 0.5f - win);
+                win += ver;
+                hedef = once - (int)Math.Round((fark - ver) * 56);
+            }
+            else if (v < Ust && win < 0.995f) { win += (Ust - v) / 56f; hedef = Ust; }
+            else if (v > Alt && win > 0.005f) { win -= (v - Alt) / 56f; hedef = Alt; }
+            else return;
+            Ses.Ayarla(Math.Max(0f, Math.Min(1f, (float)Math.Round(win * 100) / 100f)));
+            if (hedef == v) return;
+            Gonder(0x06, 0x25, (byte)hedef);
+            dugme = hedef;
+            panel.Dugme = hedef;
         }
         catch (Exception e) { Log("aktarma: " + e.Message); }
     }
