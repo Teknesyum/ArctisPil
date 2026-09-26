@@ -269,22 +269,79 @@ static class Ses
         int GetMasterVolumeLevelScalar(out float l);
     }
 
-    static IVol Al()
+    [ComImport, Guid("C02216F6-8C67-4B5B-9D00-D008E73E0064"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface IOlcer
+    {
+        int GetPeakValue(out float p);
+    }
+
+    static object Etkinlestir(Guid iid)
     {
         IEnum en = (IEnum)new EnumCo();
         IDev d; en.GetDefaultAudioEndpoint(0, 1, out d);
-        Guid iid = typeof(IVol).GUID;
         object o; d.Activate(ref iid, 23, IntPtr.Zero, out o);
-        return (IVol)o;
+        return o;
     }
+
+    static IVol Al() { return (IVol)Etkinlestir(typeof(IVol).GUID); }
 
     public static float Seviye() { float v; Al().GetMasterVolumeLevelScalar(out v); return v; }
     public static void Ayarla(float v) { Guid g = Guid.Empty; Al().SetMasterVolumeLevelScalar(Math.Max(0f, Math.Min(1f, v)), ref g); }
+
+    static IOlcer olcer;
+
+    public static void OlcerYenile() { olcer = null; }
+
+    public static float Tepe()
+    {
+        try
+        {
+            if (olcer == null) olcer = (IOlcer)Etkinlestir(typeof(IOlcer).GUID);
+            float p; olcer.GetPeakValue(out p);
+            return p;
+        }
+        catch { olcer = null; return 0f; }
+    }
+}
+
+static class PilKaydi
+{
+    const long Sinir = 8L * 1024 * 1024;
+    const string Baslik = "zaman,tur,ham,hal,sesli_sn,anc,kulaklik_ses,windows_ses";
+
+    public static string Klasor { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Uygulama.Ad); } }
+
+    public static string Yol(string anahtar)
+    {
+        string temiz = System.Text.RegularExpressions.Regex.Replace(anahtar.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+        return Path.Combine(Klasor, "pil-" + temiz + ".csv");
+    }
+
+    public static void Yaz(string anahtar, char tur, int ham, string hal, int sesli, int anc, int kulaklik, float windows)
+    {
+        try
+        {
+            Directory.CreateDirectory(Klasor);
+            string yol = Yol(anahtar);
+            if (File.Exists(yol) && new FileInfo(yol).Length > Sinir)
+            {
+                string eski = Path.ChangeExtension(yol, ".1.csv");
+                File.Delete(eski);
+                File.Move(yol, eski);
+            }
+            if (!File.Exists(yol)) File.WriteAllText(yol, Baslik + "\n");
+            File.AppendAllText(yol, string.Join(",", new[] {
+                DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss"), tur.ToString(), ham.ToString(), hal,
+                sesli.ToString(), anc.ToString(), kulaklik.ToString(),
+                windows < 0 ? "-1" : windows.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) }) + "\n");
+        }
+        catch { }
+    }
 }
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.0";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.1";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
     static readonly Color Basari = ColorTranslator.FromHtml("#34d399");
@@ -352,13 +409,44 @@ class Uygulama : ApplicationContext
         if (!BaslangicVar()) Baslangic(true);
 
         pilSaat.Interval = 60000;
-        pilSaat.Tick += (s, e) => Sorgula();
+        pilSaat.Tick += (s, e) => { Sorgula(); DakikaKaydi(); };
         pilSaat.Start();
+        sesSaat.Interval = 2000;
+        sesSaat.Tick += (s, e) => { if (kayitHal == "acik" && Ses.Tepe() > 0.001f) sesliSaniye += 2; };
+        sesSaat.Start();
 
 
         Thread t = new Thread(Baglanti) { IsBackground = true };
         t.Start();
     }
+
+    readonly System.Windows.Forms.Timer sesSaat = new System.Windows.Forms.Timer();
+    string kayitAnahtar, kayitHal;
+    int kayitHam = -1, sesliSaniye, ancMod = -1;
+
+    void PilKaydet(string anahtar, int ham, string hal)
+    {
+        bool degisti = anahtar != kayitAnahtar || ham != kayitHam || hal != kayitHal;
+        kayitAnahtar = anahtar; kayitHam = ham; kayitHal = hal;
+        if (degisti) Kayit('s');
+    }
+
+    void DakikaKaydi()
+    {
+        Ses.OlcerYenile();
+        if (kayitAnahtar != null) Kayit('d');
+        sesliSaniye = 0;
+    }
+
+    void Kayit(char tur)
+    {
+        bool nova = kayitAnahtar == NovaAnahtar;
+        float w = -1f;
+        try { w = Ses.Seviye(); } catch { }
+        PilKaydi.Yaz(kayitAnahtar, tur, kayitHam, kayitHal, Math.Min(sesliSaniye, 60), nova ? ancMod : -1, nova ? dugme : -1, w);
+    }
+
+    const string NovaAnahtar = "1038-12e0";
 
     void Log(string s)
     {
@@ -411,6 +499,8 @@ class Uygulama : ApplicationContext
         ui.Post(_ =>
         {
             panel.Kisitli = true;
+            if (var) PilKaydet(ad, yuzde, sarj ? "sarj" : "acik");
+            else if (kayitAnahtar != null) PilKaydet(kayitAnahtar, -1, "yok");
             if (var) PilGoster(ad, yuzde, sarj);
             else { durumMenu.Text = "Kulaklık bulunamadı"; tepsi.Text = Ad + ": kulaklık yok"; Ciz("–", Yazi); panel.PilAyarla(-1, "yok", Yazi); }
         }, null);
@@ -432,7 +522,7 @@ class Uygulama : ApplicationContext
             if (n > 15 && b[0] == 0x06 && b[1] == 0xB0)
             {
                 int sv = b[6], du = b[15], sf = b[8], an = b[10];
-                ui.Post(_ => { PilGeldi(sv, du); panel.Ayarlar(an, sf, -1); }, null);
+                ui.Post(_ => { ancMod = an; PilGeldi(sv, du); panel.Ayarlar(an, sf, -1); }, null);
             }
             else if (n > 18 && b[0] == 0x06 && b[1] == 0x20)
             {
@@ -472,6 +562,7 @@ class Uygulama : ApplicationContext
     {
         if (sv != seviye || du != durum) Log(string.Format("pil: seviye {0}/8, durum 0x{1:X2}", sv, du));
         seviye = Math.Min(sv, 8); durum = du;
+        PilKaydet(NovaAnahtar, seviye, du == 0x01 ? "kapali" : du == 0x02 ? "sarj" : "acik");
         int yuzde = seviye * 100 / 8;
         if (du == 0x01)
         {

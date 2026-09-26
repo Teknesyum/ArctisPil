@@ -8,16 +8,28 @@ The Nova Pro reports battery as a level 0-8, so the tray moves in 12.5% jumps. H
 
 ## Model
 
-- **100 cells, one per percent.** Cell `i` stores `d[i]`: minutes of use that percent lasts. Start uniform: rated runtime / 100; the first full cycle replaces it.
-- **Bands.** A device level covers a band of cells (Nova: 8 bands of 12.5). Only level changes are real measurements.
-- **Learning.** When the device drops from band `k` to `k-1`, the time spent in band `k` is one observation. The cells of that band are scaled so their sum matches it, smoothed across cycles: `d_new = d_old + 0.3 · (d_obs - d_old)`. The shape inside a band follows neighbouring bands until finer data exists.
+No calibration run: the app learns from normal use and gets closer with every band the user drains.
+
+- **Two learned values, updated together.**
+  - `m`: minutes one percent lasts, averaged over the whole battery (assumes a roughly even drain).
+  - `d[i]`: 100 cells, one per percent, the local shape. Starts as `d[i] = m`.
+- **Bands.** A device level covers a band of cells (Nova: levels at 100, 87, 75, 62, 50, 37, 25, 12, 0). Only level changes are measurements.
+- **Display between steps.** On entering a band, the estimate starts at its top and drops 1% each time the current cell's `d[i]` of use time runs out.
+- **Wait at the edge.** The estimate never passes the next device level: in the 25 → 12 band it stops at 13 and waits for the device to report 12. An early report snaps it down.
+- **When the band ends**, the measured band time updates both values (smoothing `a = 0.3`):
+  - the band's cells are scaled toward the measured time, so the next pass through 25 → 12 ticks at the right pace;
+  - `m` moves toward band time / band width, so bands not yet measured get a better guess too.
+  A band longer than expected (a long wait at 13) raises both; a short one lowers both.
 - **Censored bands are not learned.** The first band after app start, a battery swap or charging is partial; it only sets the anchor.
-- **Display between steps.** From the moment a band is entered, elapsed use time walks down the cells: each time a cell's `d[i]` runs out, the tray drops 1%. The estimate is clamped inside the current band: it never passes the lower edge before the device confirms, and snaps to the edge when the device steps early.
-- **Next cycle.** Remaining time = sum of `d` over the cells left. Each full cycle refines `d`, so the next cycle's 1% ticks and remaining time get closer to reality.
+- **Remaining time** = sum of `d` over the cells left, scaled by the current use rate.
 
-## Load
+## Active Use
 
-Drain depends on ANC mode and volume. Phase 2: log mode and volume per minute, learn one multiplier per ANC mode (off / transparency / ANC) from band times, and scale `d[i]` by the current mode while counting down.
+Drain differs between listening and idle. The log counts seconds with sound on the output each minute (`sesli_sn`).
+
+- One use minute = `sesli_sn / 60` active plus the rest idle; idle weight `w` starts at 1 and is learned from bands with different active shares (least squares over the last bands).
+- The countdown advances by use minutes, not wall minutes: during silence it slows, headset off pauses it.
+- Phase 2: one multiplier per ANC mode, learned the same way.
 
 ## Events
 
@@ -31,7 +43,9 @@ Drain depends on ANC mode and volume. Phase 2: log mode and volume per minute, l
 
 ## Storage
 
-`%LOCALAPPDATA%\HeadsetBatteryTray\pil-<device>.txt`: 100 drain values, 100 charge values, mode multipliers, last estimate with timestamp. The device key is VID:PID or the Bluetooth name. One profile per device model; the Nova's two batteries share it.
+Log: `%LOCALAPPDATA%\HeadsetBatteryTray\pil-<device>.csv`, one row per minute plus one per change: time, type (`d` minute / `s` change), raw level, state (`acik`/`sarj`/`kapali`/`yok`), `sesli_sn`, ANC mode, headset volume, Windows volume. Rotates to `.1.csv` at 8 MB.
+
+Learned table: `pil-<device>.txt`: `m`, `w`, 100 drain values, 100 charge values, mode multipliers, last estimate with timestamp. The device key is VID:PID or the Bluetooth name. One profile per device model; the Nova's two batteries share it.
 
 ## UI
 
@@ -39,7 +53,7 @@ Tray shows the estimated percent. Tooltip: `~57% (device 50-62%), ~11 h 20 min l
 
 ## Steps
 
-1. Log only: record level changes with time, mode and volume; no UI change.
+1. Log only: record level changes with time, mode and volume; no UI change. **Done in v0.3.1.**
 2. Estimator class with the cell table, fed from the log; test by replaying recorded cycles.
 3. Tray and tooltip use the estimate; toggle in the menu.
 4. Charge curve and ANC multipliers.
