@@ -3,8 +3,9 @@
 Tray battery app for headsets; full panel for SteelSeries Arctis Nova Pro Wireless (VID 1038, PID 12E0).
 
 - `src/HeadsetBatteryTray.cs` — whole app, .NET Framework 4 WinForms, single file. `Uygulama.Ad`/`Surum` drive name, version, log, mutex, Run key (old `ArctisPil` key is removed).
-- `build.ps1` — framework csc → `bin/HeadsetBatteryTray.exe`; embeds `vendor/headsetcontrol.exe` as a resource when present.
-- `test/` — HID probes (`dinle.ps1`, `komut-dene.ps1`), previews, `hc-coz.ps1` (HC JSON), `bt-pil.ps1` (BT battery).
+- `build.ps1` — framework csc → `bin/HeadsetBatteryTray.exe`; embeds `vendor/headsetcontrol.exe` and `assets/fonts/*.ttf` as resources.
+- `test/` — HID probes (`dinle.ps1`, `komut-dene.ps1`), `onizleme.ps1` (every state at 100/125/150%), `panel-test.ps1` (headless layout/keyboard), `kontrast.ps1`, `pencere.ps1` (real window), `hc-coz.ps1`, `bt-pil.ps1`.
+- UI: `Tema` holds teknesyum-ui `benim` tokens (C# 5 port of `teknesyum-ui/winforms/Palette.cs`); colors only from `Tema`. Audit: `docs/ui-denetim/`.
 - `docs/` — `plan.md`, `plan-ses-koruma.md` (Loudness Equalization toggle, plan only), `devices.csv` (popular 50).
 - `rapor/` (gitignored, Turkish) — research.
 

@@ -1,0 +1,22 @@
+Bağımsız görüntü bakışı — alt ajan (sonnet), kural verilmeden yalnız "-sonra.png" dosyaları. Ham çıktı, değiştirilmedi.
+
+Tüm "-sonra.png" dosyaları incelendi (35 dosya, hepsi Read ile açıldı; başka dosya okunmadı).
+
+- simge-100-sonra.png — sorun yok (rakamlar okunaklı, kalın/ince satır karşılaştırması net; hizada kayma yok)
+- panel-dolu-100/125/150-sonra.png — sorun yok (üç ölçekte de aynı düzen, kesme/taşma yok)
+- panel-dusuk-100/125/150-sonra.png — sorun yok (magenta uyarı rengi tutarlı)
+- panel-sarj-100/125/150-sonra.png — sorun yok
+- panel-odak-100/125/150-sonra.png — sorun yok (odak halkası Kulaklık sesi üzerinde, üç ölçekte de görünür)
+- panel-uzerinde-100/125/150-sonra.png — sorun yok (statik görüntüde hover farkı seçilemiyor, ama düzen bozulmamış)
+- panel-kapali-100/125/150-sonra.png — "Kulaklık kapalı. Açınca pil burada görünür." metni gerçek bir hata değil, normal bir durum; buna rağmen "Yeniden dene" düğmesi tıpkı gerçek hata (bulunamadı) durumundaki gibi tam vurgulu/mavi gösteriliyor — kullanıcı bunun bir sorun olduğunu sanabilir
+- panel-yok-100/125/150-sonra.png — metin ve düğme okunaklı, sorun yok (kapali ile karşılaştırmalı yukarıdaki not geçerli)
+- panel-yok-dugme-100/125/150-sonra.png — sadece düğme odak halkası eklenmiş hali, tutarlı, sorun yok
+- panel-kisitli-100/125/150-sonra.png — Kulaklık sesi, Gürültü engelleme ve Mikrofon bölümleri hiç açıklama yazısı olmadan tamamen kayboluyor; diğer eksik-veri durumlarında ("kapalı", "bulunamadı", "okunuyor") en azından bir açıklayıcı cümle var, burada yok — kullanıcı bu bölümlerin neden gittiğini anlayamaz
+- panel-okunuyor-100/125/150-sonra.png — sorun yok (tüm bölümler korunmuş, sadece boş/gri dolgu, "Pil okunuyor..." açıklayıcı)
+- menu-100/125/150-sonra.png — sorun yok (üç ölçekte de hizalama, onay işareti, vurgulu satır tutarlı)
+- panel-gercek-100-sonra.png — gerçek pencere yakalamasında diğer tüm mockup'larda bulunan dış çerçeve/parlama (border/glow) yok; ayrıca ANC seçiliyken Şeffaflık kartı beklendiği gibi kayboluyor (bu kısım tutarlı), ama genel görünüm mockup'lardan görsel olarak farklı
+
+En önemli 3 bulgu:
+1. panel-kisitli — üç bölüm (Kulaklık sesi, Gürültü engelleme, Mikrofon) açıklamasız kayboluyor, kullanıcı için belirsiz.
+2. panel-kapali — normal "kapalı" durumu, hata durumuyla ("bulunamadı") aynı vurgulu düğme stilini kullanıyor; ciddiyet farkı görsel olarak ayrışmıyor.
+3. panel-gercek-100 — gerçek pencere yakalaması, mockup'lardaki çerçeve/parlama stilini taşımıyor; tasarım ile gerçek görünüm arasında fark var.

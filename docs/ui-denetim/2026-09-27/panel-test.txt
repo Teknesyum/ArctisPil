@@ -1,0 +1,47 @@
+﻿geçti  dolu %100: öğe alanları çakışmıyor (0)
+geçti  dolu %100: öğeler pencere içinde (0 taşma)
+geçti  dolu %100: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %100: genişlik 300 DIP (300)
+geçti  yok %100: öğe alanları çakışmıyor (0)
+geçti  yok %100: öğeler pencere içinde (0 taşma)
+geçti  yok %100: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %100: genişlik 300 DIP (300)
+geçti  dolu %125: öğe alanları çakışmıyor (0)
+geçti  dolu %125: öğeler pencere içinde (0 taşma)
+geçti  dolu %125: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %125: genişlik 300 DIP (375)
+geçti  yok %125: öğe alanları çakışmıyor (0)
+geçti  yok %125: öğeler pencere içinde (0 taşma)
+geçti  yok %125: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %125: genişlik 300 DIP (375)
+geçti  dolu %150: öğe alanları çakışmıyor (0)
+geçti  dolu %150: öğeler pencere içinde (0 taşma)
+geçti  dolu %150: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %150: genişlik 300 DIP (450)
+geçti  yok %150: öğe alanları çakışmıyor (0)
+geçti  yok %150: öğeler pencere içinde (0 taşma)
+geçti  yok %150: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %150: genişlik 300 DIP (450)
+geçti  Tab ilk odaklanabilir öğeye gider (Kulaklık sesi)
+geçti  klavye odağı halkayı açar
+geçti  Sağ ok kulaklık sesini artırır (0.61 → 0.64)
+geçti  kulaklığa komut gitti
+geçti  Home değeri sıfırlar
+geçti  End değeri tama çıkarır
+geçti  Tab iki adım sonra Gürültü engelleme
+geçti  Sağ ok segmentte ANC seçer
+geçti  ANC seçilince Şeffaflık gizlenir
+geçti  Sol ok Şeffaf seçer, Şeffaflık görünür
+geçti  Shift+Tab geri gider
+geçti  fare ile Kapalı seçilir
+geçti  fare tıklaması odak halkasını kapatır
+geçti  Esc paneli kapatır
+geçti  kulaklık yokken ipucu ve düğme görünür
+geçti  düğme metni 'Yeniden ara'
+geçti  Tab düğmeye gider
+geçti  Enter yeniden arar
+geçti  tıklama yeniden arar
+geçti  pil gelince düğme kaybolur, kısıtlı açıklaması kalır
+geçti  tam modda ipucu gizli
+geçti  kapalıyken 'Yeniden dene'
+hata: 0

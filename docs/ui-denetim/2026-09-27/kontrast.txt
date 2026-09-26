@@ -1,0 +1,58 @@
+﻿Kontrast Ölçümü — 2026-09-27 01:47 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
+
+Ekran         Oge                           Hal                           On      Zemin    Oran Esik Sonuc
+-----         ---                           ---                           --      -----    ---- ---- -----
+panel         etiket                        dinlenme                      #6FB7FF #000000  9,89    7 geçti
+panel         değer                         dinlenme                      #FFFFFF #000000    21    7 geçti
+panel         pil değeri ≥50                dinlenme                      #66F09A #000000  14,5    7 geçti
+panel         pil değeri 25-49              dinlenme                      #FFD24D #000000 14,58    7 geçti
+panel         pil değeri <25                dinlenme                      #FA8CFF #000000 10,26    7 geçti
+panel         pil değeri şarjda             dinlenme                      #6FB7FF #000000  9,89    7 geçti
+panel         ipucu metni                   boş/hata                      #FFFFFF #000000    21    7 geçti
+panel         segment metni                 dinlenme                      #FFFFFF #162533  15,6    7 geçti
+panel         segment metni                 üzerinde                      #FFFFFF #22374D  12,2    7 geçti
+panel         segment metni                 seçili                        #000000 #6FB7FF  9,89    7 geçti
+panel         düğme metni                   dinlenme/üzerinde/basılı/odak #000000 #6FB7FF  9,89    7 geçti
+panel         odak halkası                  odak                          #6FB7FF #000000  9,89    3 geçti
+panel         çubuk/segment kenarı          dinlenme                      #3D648C #000000   3,4    3 geçti
+panel         pencere kenarı                dinlenme                      #3D648C #000000   3,4    3 geçti
+panel         çubuk dolgusu Renk1           dinlenme                      #6FB7FF #162533  7,35    3 geçti
+panel         çubuk dolgusu Renk1           üzerinde                      #6FB7FF #22374D  5,75    3 geçti
+panel         çubuk dolgusu Renk3           dinlenme                      #C3A3FF #162533  7,43    3 geçti
+panel         çubuk dolgusu Renk3           üzerinde                      #C3A3FF #22374D  5,81    3 geçti
+panel         çubuk dolgusu Success         dinlenme                      #66F09A #162533 10,77    3 geçti
+panel         çubuk dolgusu Success         üzerinde                      #66F09A #22374D  8,42    3 geçti
+panel         çubuk dolgusu Danger          dinlenme                      #CBA7D2 #162533  7,42    3 geçti
+panel         çubuk dolgusu Danger          üzerinde                      #CBA7D2 #22374D  5,81    3 geçti
+panel         seçili segment                seçili                        #6FB7FF #000000  9,89    3 geçti
+panel         düğme dolgusu                 dinlenme                      #6FB7FF #000000  9,89    3 geçti
+panel         ikincil düğme metni (kapalı)  dinlenme/üzerinde/basılı/odak #FFFFFF #162533  15,6    7 geçti
+panel         ikincil düğme kenarı (kapalı) dinlenme                      #3D648C #000000   3,4    3 geçti
+menü          öğe metni                     dinlenme                      #FFFFFF #000000    21    7 geçti
+menü          öğe metni                     üzerinde/klavye seçimi        #FFFFFF #162533  15,6    7 geçti
+menü          bilgi satırı (etkisiz)        dinlenme                      #FFFFFF #000000    21    7 geçti
+menü          Teknesyum                     dinlenme                      #6FB7FF #000000  9,89    7 geçti
+menü          Teknesyum                     üzerinde                      #6FB7FF #162533  7,35    7 geçti
+menü          onay işareti                  seçili                        #6FB7FF #000000  9,89    3 geçti
+menü          onay işareti                  üzerinde                      #6FB7FF #162533  7,35    3 geçti
+menü          kenar                         dinlenme                      #3D648C #000000   3,4    3 geçti
+tepsi simgesi rakam Success                 görev çubuğu (ölçülen)        #66F09A #202A31 10,09    7 geçti
+tepsi simgesi rakam Warning                 görev çubuğu (ölçülen)        #FFD24D #202A31 10,14    7 geçti
+tepsi simgesi rakam DangerText              görev çubuğu (ölçülen)        #FA8CFF #202A31  7,14    7 geçti
+tepsi simgesi rakam TextBody                görev çubuğu (ölçülen)        #FFFFFF #202A31 14,61    7 geçti
+
+
+
+Piksel doğrulaması (100%, gerçek render)
+
+Nokta                     Beklenen Olculen Fark Sonuc
+-----                     -------- ------- ---- -----
+segment zemini (üzerinde) #22374D  #22374D    0 geçti
+segment zemini (dinlenme) #162533  #162533    0 geçti
+segment zemini (seçili)   #6FB7FF  #6FB7FF    0 geçti
+çubuk izi (boş kısım)     #162533  #162533    0 geçti
+panel zemini              #000000  #000000    0 geçti
+
+
+
+hata: 0

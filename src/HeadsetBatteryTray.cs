@@ -341,14 +341,9 @@ static class PilKaydi
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.1";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.2";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
-    static readonly Color Basari = ColorTranslator.FromHtml("#34d399");
-    static readonly Color Uyari = ColorTranslator.FromHtml("#fbbf24");
-    static readonly Color Tehlike = ColorTranslator.FromHtml("#ff54eb");
-    static readonly Color Mavi = ColorTranslator.FromHtml("#00f3ff");
-    static readonly Color Yazi = ColorTranslator.FromHtml("#ffffff");
 
     readonly NotifyIcon tepsi = new NotifyIcon();
     readonly System.Windows.Forms.Timer pilSaat = new System.Windows.Forms.Timer();
@@ -375,7 +370,8 @@ class Uygulama : ApplicationContext
         durumYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "aktarma.txt");
         AcilistaGeriAl();
 
-        ContextMenuStrip m = new ContextMenuStrip { Renderer = new MenuTemasi(), ForeColor = Yazi, ShowImageMargin = false, ShowCheckMargin = true };
+        ContextMenuStrip m = new ContextMenuStrip();
+        MenuTemasi.Uygula(m);
         durumMenu = new ToolStripMenuItem("Bağlanıyor…") { Enabled = false };
         aktarmaMenu = new ToolStripMenuItem("Ses aktarma (20-80)", null, (s, e) => aktarmaMenu.Checked = !aktarmaMenu.Checked) { Checked = true };
         baslangicMenu = new ToolStripMenuItem("Windows ile başlat", null, (s, e) => Baslangic(!baslangicMenu.Checked));
@@ -387,7 +383,7 @@ class Uygulama : ApplicationContext
         m.Items.Add(baslangicMenu);
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Bize ulaşın", null, (s, e) => Git(Depo + "/issues/new/choose")));
-        m.Items.Add(new ToolStripMenuItem("Teknesyum", null, (s, e) => Git(Depo)) { ForeColor = Mavi });
+        m.Items.Add(new ToolStripMenuItem("Teknesyum", null, (s, e) => Git(Depo)) { ForeColor = Tema.Renk1 });
         m.Items.Add(new ToolStripMenuItem("Destekle", null, (s, e) => Git("https://github.com/sponsors/Teknesyum")));
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Çıkış", null, (s, e) => Kapat()));
@@ -395,7 +391,7 @@ class Uygulama : ApplicationContext
 
         tepsi.ContextMenuStrip = m;
         tepsi.Text = Ad + ": bağlanıyor";
-        Ciz("?", Yazi);
+        Ciz("?", Tema.TextBody);
         tepsi.Visible = true;
         panel = new SesPaneli();
         panel.Acildi = Sorgula;
@@ -404,6 +400,9 @@ class Uygulama : ApplicationContext
         panel.SeffafAyar = l => Gonder(0x06, 0xB9, (byte)l);
         panel.MikAyar = l => Gonder(0x06, 0x37, (byte)l);
         panel.Kaydet = () => { Gonder(0x06, 0x09); Log("ayarlar cihaza kaydedildi"); };
+        panel.YenidenAra = () => { Sorgula(); if (panel.Kisitli) ThreadPool.QueueUserWorkItem(_ => YedekBak()); };
+        EventWaitHandle acSinyal = new EventWaitHandle(false, EventResetMode.AutoReset, Ad + "-ac");
+        new Thread(() => { while (calisiyor) if (acSinyal.WaitOne(1000)) ui.Post(_ => panel.Ac(true), null); }) { IsBackground = true }.Start();
         tepsi.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) panel.Ac(); };
 
         if (!BaslangicVar()) Baslangic(true);
@@ -502,7 +501,7 @@ class Uygulama : ApplicationContext
             if (var) PilKaydet(ad, yuzde, sarj ? "sarj" : "acik");
             else if (kayitAnahtar != null) PilKaydet(kayitAnahtar, -1, "yok");
             if (var) PilGoster(ad, yuzde, sarj);
-            else { durumMenu.Text = "Kulaklık bulunamadı"; tepsi.Text = Ad + ": kulaklık yok"; Ciz("–", Yazi); panel.PilAyarla(-1, "yok", Yazi); }
+            else { durumMenu.Text = "Kulaklık bulunamadı"; tepsi.Text = Ad + ": kulaklık yok"; Ciz("–", Tema.TextBody); panel.PilAyarla(-1, "yok"); }
         }, null);
     }
 
@@ -566,9 +565,9 @@ class Uygulama : ApplicationContext
         int yuzde = seviye * 100 / 8;
         if (du == 0x01)
         {
-            Ciz("–", Yazi);
+            Ciz("–", Tema.TextBody);
             tepsi.Text = "Arctis: kulaklık kapalı";
-            panel.PilAyarla(-1, "kapalı", Yazi);
+            panel.PilAyarla(-1, "kapalı");
             durumMenu.Text = "Kulaklık kapalı";
             return;
         }
@@ -578,12 +577,12 @@ class Uygulama : ApplicationContext
     void PilGoster(string ad, int yuzde, bool sarj)
     {
         string hal = sarj ? "şarjda" : "";
-        Color c = sarj ? Mavi : yuzde >= 50 ? Basari : yuzde >= 25 ? Uyari : Tehlike;
+        Color c = sarj ? Tema.TextBody : Tema.PilYazi(yuzde, sarj);
         Ciz(yuzde.ToString(), c);
         string metin = ad + " pil: %" + yuzde + (hal != "" ? " (" + hal + ")" : "");
         tepsi.Text = metin.Length > 63 ? metin.Substring(0, 63) : metin;
         durumMenu.Text = metin;
-        panel.PilAyarla(yuzde, hal, c);
+        panel.PilAyarla(yuzde, hal);
         if (!sarj && yuzde <= 25 && !dusukUyarildi)
         {
             dusukUyarildi = true;
@@ -713,13 +712,23 @@ class Uygulama : ApplicationContext
         Sil();
     }
 
+    [DllImport("user32.dll")]
+    static extern bool SetProcessDPIAware();
+    [DllImport("user32.dll")]
+    static extern bool AllowSetForegroundWindow(int p);
+
     [STAThread]
     static void Main()
     {
         bool yeni;
         using (Mutex mx = new Mutex(true, Uygulama.Ad + "-tek", out yeni))
         {
-            if (!yeni) return;
+            if (!yeni)
+            {
+                try { AllowSetForegroundWindow(-1); using (EventWaitHandle h = EventWaitHandle.OpenExisting(Uygulama.Ad + "-ac")) h.Set(); } catch { }
+                return;
+            }
+            try { SetProcessDPIAware(); } catch { }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Uygulama());
@@ -727,42 +736,218 @@ class Uygulama : ApplicationContext
     }
 }
 
+static class Tema
+{
+    public static readonly Color Renk1 = ColorTranslator.FromHtml("#6FB7FF");
+    public static readonly Color Renk2 = ColorTranslator.FromHtml("#CBA7D2");
+    public static readonly Color Renk3 = ColorTranslator.FromHtml("#C3A3FF");
+    public static readonly Color Success = ColorTranslator.FromHtml("#66F09A");
+    public static readonly Color Renk2Text = ColorTranslator.FromHtml("#FA8CFF");
+    public static readonly Color Danger = Renk2;
+    public static readonly Color DangerText = Renk2Text;
+    public static readonly Color Warning = ColorTranslator.FromHtml("#FFD24D");
+    public static readonly Color Surface = ColorTranslator.FromHtml("#000000");
+    public static readonly Color TextBody = ColorTranslator.FromHtml("#FFFFFF");
+    public static readonly Color TextLabel = Renk1;
+    public static readonly Color FocusRing = Renk1;
+    public static readonly Color BorderDefault = Color.FromArgb(0x8C, Renk1);
+    public static readonly Color BorderDecorative = Color.FromArgb(0x33, Renk1);
+    public static readonly Color Renk1Yuzde20 = Color.FromArgb(0x33, Renk1);
+    public static readonly Color Renk1Yuzde30 = Color.FromArgb(0x4D, Renk1);
+
+    public const int Radius = 3, WindowRadius = 3, BorderWidth = 1, FocusWidth = 2, FocusOffset = 2;
+    public const int FontSize1 = 14, FontSize2 = 16, FontSize3 = 20;
+    public const double LineHeightHeading = 1.25;
+    public const int Space1 = 4, Space2 = 8, Space3 = 12;
+    public const int PanelPadding = 24, SectionGap = 24, RowGap = 12, FieldGap = 8;
+    public const int TargetMin = 24, InputHeight = 40, EntryOffset = 8, FrameBudgetMs = 16;
+    public const float ScaleHover = 1.02f, ScalePress = 0.98f;
+    public const int Fast = 80, Base = 150, Slow = 240;
+    public static readonly double[] Cik = { 0.2, 0, 0, 1 };
+    public static readonly double[] Gir = { 0.4, 0, 1, 1 };
+    public static readonly double[] GirCik = { 0.4, 0, 0.2, 1 };
+
+    [DllImport("user32.dll")]
+    static extern bool SystemParametersInfo(uint a, uint b, out bool c, uint d);
+    [DllImport("gdi32.dll")]
+    static extern IntPtr AddFontMemResourceEx(IntPtr pb, uint cb, IntPtr pdv, out uint n);
+
+    public static bool Hareket = HareketAcik();
+
+    static bool HareketAcik()
+    {
+        bool v;
+        try { if (SystemParametersInfo(0x1042, 0, out v, 0)) return v; } catch { }
+        return true;
+    }
+
+    static float olcek;
+    public static float Olcek
+    {
+        get
+        {
+            if (olcek > 0) return olcek;
+            try { using (Graphics g = Graphics.FromHwnd(IntPtr.Zero)) olcek = g.DpiX / 96f; } catch { olcek = 1f; }
+            return olcek;
+        }
+    }
+
+    static PrivateFontCollection pfc;
+    static readonly List<IntPtr> bellek = new List<IntPtr>();
+    static FontFamily sans, sansYari;
+    static string mono;
+
+    static void Yukle()
+    {
+        if (pfc != null) return;
+        pfc = new PrivateFontCollection();
+        System.Reflection.Assembly a = typeof(Tema).Assembly;
+        foreach (string ad in a.GetManifestResourceNames())
+        {
+            if (!ad.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)) continue;
+            try
+            {
+                byte[] v;
+                using (Stream s = a.GetManifestResourceStream(ad))
+                using (MemoryStream m = new MemoryStream()) { s.CopyTo(m); v = m.ToArray(); }
+                IntPtr p = Marshal.AllocCoTaskMem(v.Length);
+                Marshal.Copy(v, 0, p, v.Length);
+                pfc.AddMemoryFont(p, v.Length);
+                uint n;
+                AddFontMemResourceEx(p, (uint)v.Length, IntPtr.Zero, out n);
+                bellek.Add(p);
+            }
+            catch { }
+        }
+        foreach (FontFamily f in pfc.Families)
+        {
+            if (f.Name == "Atkinson Hyperlegible Next") sans = f;
+            else if (f.Name.StartsWith("Atkinson Hyperlegible Next ")) sansYari = f;
+        }
+        if (sans == null) sans = new FontFamily("Segoe UI");
+        using (InstalledFontCollection y = new InstalledFontCollection())
+            mono = y.Families.Any(f => f.Name == "Cascadia Mono") ? "Cascadia Mono" : "Consolas";
+    }
+
+    public static Font Sans(float px, bool yari)
+    {
+        Yukle();
+        if (yari && sansYari != null) return new Font(sansYari, px, FontStyle.Regular, GraphicsUnit.Pixel);
+        return new Font(sans, px, yari ? FontStyle.Bold : FontStyle.Regular, GraphicsUnit.Pixel);
+    }
+
+    public static Font Mono(float px) { Yukle(); return new Font(mono, px, FontStyle.Bold, GraphicsUnit.Pixel); }
+
+    public static string Aileler() { Yukle(); return (sans != null ? sans.Name : "-") + " | " + (sansYari != null ? sansYari.Name : "-") + " | " + mono; }
+
+    public static Color PilYazi(int yuzde, bool sarj) { return sarj ? Renk1 : yuzde >= 50 ? Success : yuzde >= 25 ? Warning : DangerText; }
+    public static Color PilDolgu(int yuzde, bool sarj) { return sarj ? Renk1 : yuzde >= 50 ? Success : yuzde >= 25 ? Renk1 : Danger; }
+
+    public static double Egri(double[] e, double t)
+    {
+        if (t <= 0) return 0;
+        if (t >= 1) return 1;
+        double a = 0, b = 1, s = t;
+        for (int i = 0; i < 24; i++) { s = (a + b) / 2; if (Bz(e[0], e[2], s) < t) a = s; else b = s; }
+        return Bz(e[1], e[3], s);
+    }
+
+    static double Bz(double p1, double p2, double s) { double u = 1 - s; return 3 * u * u * s * p1 + 3 * u * s * s * p2 + s * s * s; }
+
+    public static Color Karistir(Color a, Color b, float t)
+    {
+        t = Math.Max(0f, Math.Min(1f, t));
+        return Color.FromArgb((int)Math.Round(a.A + (b.A - a.A) * t), (int)Math.Round(a.R + (b.R - a.R) * t), (int)Math.Round(a.G + (b.G - a.G) * t), (int)Math.Round(a.B + (b.B - a.B) * t));
+    }
+
+    public static System.Drawing.Drawing2D.GraphicsPath Yuvarlak(RectangleF r, float y)
+    {
+        System.Drawing.Drawing2D.GraphicsPath p = new System.Drawing.Drawing2D.GraphicsPath();
+        float d = Math.Min(y * 2, Math.Min(r.Width, r.Height));
+        if (d <= 0) { p.AddRectangle(r); return p; }
+        p.AddArc(r.X, r.Y, d, d, 180, 90);
+        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
+        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
+        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+        p.CloseFigure();
+        return p;
+    }
+}
+
+class Gecis
+{
+    float bas, hedef;
+    int t0, sure;
+    double[] egri = Tema.Cik;
+
+    public Gecis(float v) { bas = hedef = v; }
+    public float Hedef { get { return hedef; } }
+    public void Ata(float v) { bas = hedef = v; sure = 0; }
+
+    public void Git(float v, int ms, double[] e)
+    {
+        if (v == hedef) return;
+        bas = Deger; hedef = v; egri = e; t0 = Environment.TickCount;
+        sure = Tema.Hareket ? ms : 0;
+    }
+
+    public bool Suruyor { get { return sure > 0 && Environment.TickCount - t0 < sure; } }
+
+    public float Deger
+    {
+        get
+        {
+            if (!Suruyor) return hedef;
+            double t = (Environment.TickCount - t0) / (double)sure;
+            return bas + (hedef - bas) * (float)Tema.Egri(egri, t);
+        }
+    }
+}
+
 class MenuTemasi : ToolStripProfessionalRenderer
 {
-    static readonly Color Zemin = ColorTranslator.FromHtml("#08090a");
-    static readonly Color Mavi = ColorTranslator.FromHtml("#00f3ff");
-    static readonly Color Yazi = ColorTranslator.FromHtml("#ffffff");
+    public static void Uygula(ContextMenuStrip m)
+    {
+        m.Renderer = new MenuTemasi();
+        m.ForeColor = Tema.TextBody;
+        m.BackColor = Tema.Surface;
+        m.Font = Tema.Sans(Tema.FontSize2 * Tema.Olcek, false);
+        m.ShowImageMargin = false;
+        m.ShowCheckMargin = true;
+    }
 
-    protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Zemin)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
-    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Zemin)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
-    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { using (Pen p = new Pen(Color.FromArgb(51, Mavi))) e.Graphics.DrawRectangle(p, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1); }
+    protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Tema.Surface)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
+    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Tema.Surface)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
+    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { using (Pen p = new Pen(Tema.BorderDefault)) e.Graphics.DrawRectangle(p, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1); }
+
     protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
     {
         Rectangle r = new Rectangle(2, 0, e.Item.Width - 4, e.Item.Height);
-        using (SolidBrush b = new SolidBrush(e.Item.Selected && e.Item.Enabled ? Color.FromArgb(51, Mavi) : Zemin)) e.Graphics.FillRectangle(b, r);
+        using (SolidBrush b = new SolidBrush(Tema.Surface)) e.Graphics.FillRectangle(b, r);
+        if (!e.Item.Selected || !e.Item.Enabled) return;
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (System.Drawing.Drawing2D.GraphicsPath p = Tema.Yuvarlak(r, Tema.Radius * Tema.Olcek))
+        using (SolidBrush b = new SolidBrush(Tema.Renk1Yuzde20)) e.Graphics.FillPath(b, p);
     }
-    protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e) { using (Pen p = new Pen(Color.FromArgb(51, Mavi))) e.Graphics.DrawLine(p, 8, e.Item.Height / 2, e.Item.Width - 8, e.Item.Height / 2); }
+
+    protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e) { using (Pen p = new Pen(Tema.BorderDecorative)) e.Graphics.DrawLine(p, 8, e.Item.Height / 2, e.Item.Width - 8, e.Item.Height / 2); }
+
     protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
     {
-        e.TextColor = e.Item.Enabled ? e.Item.ForeColor : Color.FromArgb(128, Yazi);
-        base.OnRenderItemText(e);
+        TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.Item.Enabled ? e.Item.ForeColor : Tema.TextBody, e.TextFormat);
     }
+
     protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
     {
         Rectangle r = e.ImageRectangle;
         e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        using (Pen p = new Pen(Mavi, 2)) e.Graphics.DrawLines(p, new[] { new Point(r.Left + 3, r.Top + r.Height / 2), new Point(r.Left + r.Width / 2 - 1, r.Bottom - 4), new Point(r.Right - 3, r.Top + 4) });
+        using (Pen p = new Pen(Tema.Renk1, Tema.FocusWidth * Tema.Olcek)) e.Graphics.DrawLines(p, new[] { new Point(r.Left + 3, r.Top + r.Height / 2), new Point(r.Left + r.Width / 2 - 1, r.Bottom - 4), new Point(r.Right - 3, r.Top + 4) });
     }
 }
 
 class SesPaneli : Form
 {
-    static readonly Color Zemin = ColorTranslator.FromHtml("#08090a");
-    static readonly Color Mavi = ColorTranslator.FromHtml("#00f3ff");
-    static readonly Color Pembe = ColorTranslator.FromHtml("#ff00ea");
-    static readonly Color Yazi = ColorTranslator.FromHtml("#ffffff");
-    static readonly System.Globalization.CultureInfo Tr = new System.Globalization.CultureInfo("tr-TR");
-    const int Genislik = 300, Kenar = 20, Bar = 12;
+    const int Genislik = 300;
 
     class Oge
     {
@@ -770,31 +955,40 @@ class SesPaneli : Form
         public string[] Secenek;
         public float Deger = -1;
         public int Secili = -1;
-        public Color Renk;
+        public Color Renk = Tema.Renk1;
+        public Color YaziRenk = Tema.TextBody;
         public int Y;
         public Rectangle Alan;
         public Func<float, string> Bicim;
         public Action<float> Ayar;
         public Action<int> Sec;
+        public Action Eylem;
+        public string Ipucu;
         public float Adim = 0.02f;
-        public bool Kalici;
-        public bool Kilitli;
-        public bool Gizli;
+        public bool Kalici, Kilitli, Gizli;
+        public int UzerindeSec = -1;
+        public readonly Gecis Dolu = new Gecis(-1), Kay = new Gecis(-1), Uzerinde = new Gecis(0), Boy = new Gecis(1);
+        public bool Odaklanir { get { return !Gizli && !Kilitli && Ipucu == null; } }
     }
 
     readonly List<Oge> ogeler = new List<Oge>();
-    readonly Oge pil, kul, win, anc, seffaf, mik;
-    int ayrac, yukseklik, kulV = -1;
-    bool kisitli;
-
-    public bool Kisitli { get { return kisitli; } set { if (kisitli == value) return; kisitli = value; Yerlestir(); } }
-    Oge surukle;
+    readonly Oge pil, ipucu, dugmeOge, kul, win, anc, seffaf, mik;
+    int ayrac = -1, baslik, kulV = -1, hedefX, hedefY, sayac;
+    bool kisitli, klavye, kapaniyor;
+    string pilHal;
+    float olcek = Tema.Olcek;
+    Font fEtiket, fDeger, fGovde, fDugme;
+    Oge surukle, odak, uzerinde, basili;
     DateTime kapanis;
-    readonly System.Windows.Forms.Timer yenile = new System.Windows.Forms.Timer();
+    readonly Gecis acilis = new Gecis(1);
+    readonly System.Windows.Forms.Timer kare = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer kaydetSaat = new System.Windows.Forms.Timer();
 
     public Action<int> KulaklikAyar, AncAyar, SeffafAyar, MikAyar;
-    public Action Kaydet, Acildi;
+    public Action Kaydet, Acildi, YenidenAra;
+
+    public bool Kisitli { get { return kisitli; } set { if (kisitli == value) return; kisitli = value; Yerlestir(); } }
+    public float Olcek { get { return olcek; } set { olcek = value; FontlariKur(); Yerlestir(); } }
 
     public SesPaneli()
     {
@@ -802,35 +996,51 @@ class SesPaneli : Form
         ShowInTaskbar = false;
         TopMost = true;
         StartPosition = FormStartPosition.Manual;
-        BackColor = Zemin;
+        BackColor = Tema.Surface;
         DoubleBuffered = true;
+        KeyPreview = true;
 
-        pil = Cubuk("PİL", Basari(), f => "%" + Math.Round(f * 100));
+        pil = Cubuk("Pil", f => "%" + Math.Round(f * 100));
         pil.Kilitli = true;
-        kul = Cubuk("KULAKLIK SES", Mavi, KulMetin);
+        ipucu = new Oge { Ipucu = "", Kilitli = true };
+        ogeler.Add(ipucu);
+        dugmeOge = new Oge { Ad = "Yeniden ara", Eylem = () => { if (YenidenAra != null) YenidenAra(); } };
+        ogeler.Add(dugmeOge);
+        kul = Cubuk("Kulaklık sesi", KulMetin);
         kul.Adim = 0.05f;
         kul.Ayar = f => { int v = (int)Math.Round((1 - Bes(f)) * 56); kul.Deger = (56 - v) / 56f; if (v == kulV) return; kulV = v; if (KulaklikAyar != null) KulaklikAyar(v); };
-        win = Cubuk("WINDOWS SES", Pembe, f => "%" + Math.Round(f * 100));
+        win = Cubuk("Windows sesi", f => "%" + Math.Round(f * 100));
+        win.Renk = Tema.Renk3;
         win.Adim = 0.05f;
         win.Ayar = f => { float p = Bes(f); try { Ses.Ayarla(p); win.Deger = p; } catch { } };
-        anc = Secim("GÜRÜLTÜ ENGELLEME", new[] { "KAPALI", "ŞEFFAF", "ANC" });
+        anc = Secim("Gürültü engelleme", new[] { "Kapalı", "Şeffaf", "ANC" });
         anc.Sec = i => { Yerlestir(); if (AncAyar != null) AncAyar(i); };
-        seffaf = Cubuk("ŞEFFAFLIK", Mavi, f => Math.Round(f * 10) + "/10");
+        anc.Kalici = true;
+        seffaf = Cubuk("Şeffaflık", f => Math.Round(f * 10) + "/10");
         seffaf.Adim = 0.1f; seffaf.Kalici = true;
         seffaf.Ayar = f => { int l = Math.Max(1, Math.Min(10, (int)Math.Round(f * 10))); seffaf.Deger = l / 10f; if (SeffafAyar != null) SeffafAyar(l); };
-        mik = Cubuk("MİKROFON", Mavi, f => Math.Round(f * 10) + "/10");
+        mik = Cubuk("Mikrofon", f => Math.Round(f * 10) + "/10");
         mik.Adim = 0.1f; mik.Kalici = true;
         mik.Ayar = f => { int l = Math.Max(1, Math.Min(10, (int)Math.Round(f * 10))); mik.Deger = l / 10f; if (MikAyar != null) MikAyar(l); };
-        anc.Kalici = true;
+        FontlariKur();
         Yerlestir();
 
-        yenile.Interval = 200;
-        yenile.Tick += (s, e) => { if (surukle != win) Oku(); Invalidate(); };
+        kare.Interval = Tema.FrameBudgetMs;
+        kare.Tick += (s, e) => Kare();
         kaydetSaat.Interval = 800;
         kaydetSaat.Tick += (s, e) => { kaydetSaat.Stop(); if (Kaydet != null) Kaydet(); };
     }
 
-    static Color Basari() { return ColorTranslator.FromHtml("#34d399"); }
+    int D(double v) { return (int)Math.Round(v * olcek); }
+
+    void FontlariKur()
+    {
+        foreach (Font f in new[] { fEtiket, fDeger, fGovde, fDugme }) if (f != null) f.Dispose();
+        fEtiket = Tema.Sans(Tema.FontSize1 * olcek, true);
+        fDeger = Tema.Mono(Tema.FontSize3 * olcek);
+        fGovde = Tema.Sans(Tema.FontSize2 * olcek, false);
+        fDugme = Tema.Sans(Tema.FontSize2 * olcek, true);
+    }
 
     static float Bes(float f) { return Math.Max(0f, Math.Min(1f, (float)Math.Round(f * 20) / 20f)); }
 
@@ -841,69 +1051,179 @@ class SesPaneli : Form
         return "%" + Math.Round(f * 100);
     }
 
-    Oge Cubuk(string ad, Color renk, Func<float, string> bicim)
+    Oge Cubuk(string ad, Func<float, string> bicim)
     {
-        Oge o = new Oge { Ad = ad, Renk = renk, Bicim = bicim };
+        Oge o = new Oge { Ad = ad, Bicim = bicim };
         ogeler.Add(o);
         return o;
     }
 
     Oge Secim(string ad, string[] secenek)
     {
-        Oge o = new Oge { Ad = ad, Secenek = secenek, Renk = Mavi };
+        Oge o = new Oge { Ad = ad, Secenek = secenek };
         ogeler.Add(o);
         return o;
     }
 
+    static readonly Bitmap olcu = new Bitmap(1, 1);
+
+    static StringFormat Bicim(StringAlignment yatay, StringAlignment dikey, bool sar)
+    {
+        StringFormat f = new StringFormat(StringFormat.GenericTypographic);
+        f.Alignment = yatay;
+        f.LineAlignment = dikey;
+        f.FormatFlags |= StringFormatFlags.NoClip;
+        if (!sar) f.FormatFlags |= StringFormatFlags.NoWrap;
+        return f;
+    }
+
     void Yerlestir()
     {
+        string ip = null, dg = null;
+        if (pilHal == "yok") { ip = "Kulaklık bulunamadı. Bağlayıp açın; desteklenmiyorsa bize yazın."; dg = "Yeniden ara"; }
+        else if (pilHal == "kapalı") { ip = "Kulaklık kapalı. Açınca pil burada görünür."; dg = "Yeniden dene"; }
+        else if (pil.Deger < 0) ip = "Pil okunuyor…";
+        else if (kisitli) ip = "Bu kulaklıkta yalnız pil okunur. Ses ve gürültü ayarları Arctis Nova Pro Wireless içindir.";
+        ipucu.Ipucu = ip ?? "";
+        ipucu.Gizli = ip == null;
+        dugmeOge.Gizli = dg == null;
+        if (dg != null) dugmeOge.Ad = dg;
         kul.Gizli = anc.Gizli = mik.Gizli = kisitli;
         seffaf.Gizli = kisitli || anc.Secili != 1;
-        ayrac = -10;
-        int y = 18;
+        if (odak != null && !odak.Odaklanir) odak = null;
+
+        int k = D(Tema.PanelPadding), gen = D(Genislik), ic = gen - 2 * k, satir = D(Tema.RowGap);
+        baslik = D(Tema.FontSize3 * Tema.LineHeightHeading);
+        int ek = D((Tema.TargetMin - Tema.Space3) / 2);
+        ayrac = -1;
+        int y = k;
         foreach (Oge o in ogeler)
         {
-            if (o == anc && !o.Gizli) { ayrac = y - 6; y += 12; }
             if (o.Gizli) continue;
+            if (o == anc) { ayrac = y + (D(Tema.SectionGap) - satir) / 2 - satir / 2; y += D(Tema.SectionGap) - satir; }
             o.Y = y;
-            if (o.Secenek == null) { o.Alan = new Rectangle(Kenar, y + 32, Genislik - 2 * Kenar, Bar); y += 58; }
-            else { o.Alan = new Rectangle(Kenar, y + 26, Genislik - 2 * Kenar, 28); y += 66; }
+            if (o.Ipucu != null)
+            {
+                int h;
+                using (Graphics g = Graphics.FromImage(olcu))
+                using (StringFormat sf = Bicim(StringAlignment.Near, StringAlignment.Near, true))
+                    h = (int)Math.Ceiling(g.MeasureString(o.Ipucu, fGovde, ic, sf).Height);
+                o.Alan = new Rectangle(k, y, ic, h);
+                y += h + satir;
+            }
+            else if (o.Eylem != null) { o.Alan = new Rectangle(k, y, ic, D(Tema.InputHeight)); y = o.Alan.Bottom + satir + ek; }
+            else if (o.Secenek != null) { o.Alan = new Rectangle(k, y + baslik + D(Tema.FieldGap), ic, D(Tema.TargetMin + Tema.Space1)); y = o.Alan.Bottom + satir + ek; }
+            else { o.Alan = new Rectangle(k, y + baslik + D(Tema.FieldGap), ic, D(Tema.TargetMin)); y = o.Alan.Bottom + satir; }
         }
-        if (y + 4 == yukseklik) return;
-        yukseklik = y + 4;
-        int alt = Bottom;
-        ClientSize = new Size(Genislik, yukseklik);
-        using (System.Drawing.Drawing2D.GraphicsPath p = Yuvarlak(new Rectangle(0, 0, Genislik, yukseklik), 12)) Region = new Region(p);
-        if (Visible) Top = alt - yukseklik;
+        int yuk = y - satir + k;
+        if (ClientSize.Width != gen || ClientSize.Height != yuk)
+        {
+            int fark = yuk - ClientSize.Height;
+            ClientSize = new Size(gen, yuk);
+            using (System.Drawing.Drawing2D.GraphicsPath p = Tema.Yuvarlak(new RectangleF(0, 0, gen, yuk), D(Tema.WindowRadius))) Region = new Region(p);
+            if (Visible) { hedefY -= fark; Konumla(); }
+        }
         Invalidate();
     }
 
-    protected override CreateParams CreateParams { get { CreateParams c = base.CreateParams; c.ExStyle |= 0x80; return c; } }
-
-    public void Ac()
+    protected override CreateParams CreateParams
     {
-        if ((DateTime.Now - kapanis).TotalMilliseconds < 300) return;
-        Rectangle alan = Screen.FromPoint(Cursor.Position).WorkingArea;
-        int x = Math.Min(Math.Max(alan.Left + 8, Cursor.Position.X - Genislik / 2), alan.Right - Genislik - 8);
-        Location = new Point(x, alan.Bottom - yukseklik - 8);
-        Oku();
-        if (Acildi != null) Acildi();
-        Show();
-        Activate();
-        yenile.Start();
+        get
+        {
+            CreateParams c = base.CreateParams;
+            c.ExStyle |= 0x80;
+            c.ClassStyle |= 0x20000;
+            return c;
+        }
     }
 
-    protected override void OnDeactivate(EventArgs e) { base.OnDeactivate(e); Hide(); yenile.Stop(); kapanis = DateTime.Now; surukle = null; }
+    public void Ac() { Ac(false); }
+
+    public void Ac(bool zorla)
+    {
+        if (!zorla && (DateTime.Now - kapanis).TotalMilliseconds < 300) return;
+        if (Visible && !kapaniyor) { Activate(); return; }
+        Rectangle alan = Screen.FromPoint(Cursor.Position).WorkingArea;
+        int bosluk = D(Tema.Space2);
+        hedefX = Math.Min(Math.Max(alan.Left + bosluk, Cursor.Position.X - Width / 2), alan.Right - Width - bosluk);
+        hedefY = alan.Bottom - Height - bosluk;
+        Oku();
+        if (Acildi != null) Acildi();
+        odak = null; klavye = false; kapaniyor = false; surukle = null; basili = null;
+        acilis.Ata(0);
+        acilis.Git(1, Tema.Slow, Tema.Cik);
+        Konumla();
+        Show();
+        Activate();
+        kare.Start();
+    }
+
+    void Konumla()
+    {
+        float v = acilis.Deger;
+        double op = Math.Max(0, Math.Min(1, v));
+        if (Opacity != op) Opacity = op;
+        Location = new Point(hedefX, hedefY + (int)Math.Round((1 - v) * D(Tema.EntryOffset)));
+    }
+
+    public void Kapan()
+    {
+        if (!Visible || kapaniyor) return;
+        kapaniyor = true;
+        kapanis = DateTime.Now;
+        surukle = null; basili = null;
+        acilis.Git(0, Tema.Base, Tema.Gir);
+        if (!acilis.Suruyor) Bitir();
+    }
+
+    void Bitir()
+    {
+        kare.Stop();
+        kapaniyor = false;
+        Hide();
+        acilis.Ata(1);
+    }
+
+    void Kare()
+    {
+        sayac++;
+        if (kapaniyor && !acilis.Suruyor) { Bitir(); return; }
+        if (acilis.Suruyor || kapaniyor || Opacity < 1) Konumla();
+        bool oku = sayac % 12 == 0;
+        if (oku && surukle != win) Oku();
+        if (Esitle() || oku) Invalidate();
+    }
+
+    bool Esitle()
+    {
+        bool s = false;
+        foreach (Oge o in ogeler)
+        {
+            if (o.Secenek != null)
+            {
+                if (o.Secili != o.Kay.Hedef) { if (o.Kay.Hedef < 0 || o.Secili < 0 || !Visible) o.Kay.Ata(o.Secili); else o.Kay.Git(o.Secili, Tema.Base, Tema.GirCik); }
+            }
+            else if (o.Ipucu == null && o.Eylem == null && o.Deger != o.Dolu.Hedef)
+            {
+                if (o.Dolu.Hedef < 0 || o.Deger < 0 || o == surukle || !Visible) o.Dolu.Ata(o.Deger); else o.Dolu.Git(o.Deger, Tema.Base, Tema.GirCik);
+            }
+            s |= o.Dolu.Suruyor || o.Kay.Suruyor || o.Uzerinde.Suruyor || o.Boy.Suruyor;
+        }
+        return s;
+    }
+
+    protected override void OnDeactivate(EventArgs e) { base.OnDeactivate(e); Kapan(); }
 
     void Oku() { try { win.Deger = Ses.Seviye(); } catch { win.Deger = -1; } }
 
-    string pilHal = "";
-    public void PilAyarla(int yuzde, string hal, Color renk)
+    public void PilAyarla(int yuzde, string hal)
     {
+        bool sarj = hal == "şarjda";
         pil.Deger = yuzde < 0 ? -1 : yuzde / 100f;
-        pil.Renk = renk;
+        pil.Renk = yuzde < 0 ? Tema.Renk1 : Tema.PilDolgu(yuzde, sarj);
+        pil.YaziRenk = yuzde < 0 ? Tema.TextBody : Tema.PilYazi(yuzde, sarj);
         pilHal = hal;
-        if (Visible) Invalidate();
+        Yerlestir();
     }
 
     public int Dugme { set { kulV = value; if (surukle != kul) kul.Deger = value < 0 ? -1 : (56 - Math.Min(value, 56)) / 56f; if (Visible) Invalidate(); } }
@@ -916,93 +1236,168 @@ class SesPaneli : Form
         if (Visible) Invalidate();
     }
 
-    static System.Drawing.Drawing2D.GraphicsPath Yuvarlak(Rectangle r, int y)
+    void Doldur(Graphics g, RectangleF r, Color renk)
     {
-        System.Drawing.Drawing2D.GraphicsPath p = new System.Drawing.Drawing2D.GraphicsPath();
-        int d = Math.Min(y * 2, Math.Min(r.Width, r.Height));
-        p.AddArc(r.X, r.Y, d, d, 180, 90);
-        p.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-        p.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-        p.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
-        p.CloseFigure();
-        return p;
-    }
-
-    static void Doldur(Graphics g, Rectangle r, Color renk)
-    {
-        using (System.Drawing.Drawing2D.GraphicsPath p = Yuvarlak(r, 6))
+        using (System.Drawing.Drawing2D.GraphicsPath p = Tema.Yuvarlak(r, D(Tema.Radius)))
         using (SolidBrush b = new SolidBrush(renk))
             g.FillPath(b, p);
     }
 
-    void CubukCiz(Graphics g, Oge o)
+    void Cerceve(Graphics g, RectangleF r, Color renk, float kalinlik, float yaricap)
     {
-        Doldur(g, o.Alan, Color.FromArgb(51, Mavi));
-        if (o.Deger <= 0) return;
-        int w = Math.Max(Bar, (int)Math.Round(o.Alan.Width * Math.Min(1f, o.Deger)));
-        Doldur(g, new Rectangle(o.Alan.X, o.Alan.Y, w, o.Alan.Height), o.Renk);
+        r.Inflate(-kalinlik / 2, -kalinlik / 2);
+        using (System.Drawing.Drawing2D.GraphicsPath p = Tema.Yuvarlak(r, yaricap))
+        using (Pen pen = new Pen(renk, kalinlik))
+            g.DrawPath(pen, p);
     }
 
-    void SecimCiz(Graphics g, Oge o, Font f)
+    void Yaz(Graphics g, string s, Font f, Color c, RectangleF r, StringAlignment yatay, StringAlignment dikey, bool sar)
     {
-        int n = o.Secenek.Length, ara = 4;
-        int w = (o.Alan.Width - ara * (n - 1)) / n;
+        using (StringFormat sf = Bicim(yatay, dikey, sar))
+        using (SolidBrush b = new SolidBrush(c))
+            g.DrawString(s, f, b, r, sf);
+    }
+
+    RectangleF CubukAlan(Oge o)
+    {
+        int h = D(Tema.Space3);
+        return new RectangleF(o.Alan.X, o.Alan.Y + (o.Alan.Height - h) / 2, o.Alan.Width, h);
+    }
+
+    void CubukCiz(Graphics g, Oge o)
+    {
+        RectangleF r = CubukAlan(o);
+        Doldur(g, r, Tema.Karistir(Tema.Renk1Yuzde20, Tema.Renk1Yuzde30, o == uzerinde ? o.Uzerinde.Deger : 0));
+        Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
+        float v = o.Dolu.Deger;
+        if (v <= 0) return;
+        float w = Math.Max(r.Height, r.Width * Math.Min(1f, v));
+        Doldur(g, new RectangleF(r.X, r.Y, w, r.Height), o.Renk);
+    }
+
+    RectangleF Hucre(Oge o, float i)
+    {
+        int n = o.Secenek.Length;
+        float ara = D(Tema.Space1), w = (o.Alan.Width - ara * (n - 1)) / n;
+        return new RectangleF(o.Alan.X + i * (w + ara), o.Alan.Y, w, o.Alan.Height);
+    }
+
+    void SecimCiz(Graphics g, Oge o)
+    {
+        int n = o.Secenek.Length;
         for (int i = 0; i < n; i++)
         {
-            Rectangle r = new Rectangle(o.Alan.X + i * (w + ara), o.Alan.Y, i == n - 1 ? o.Alan.Right - (o.Alan.X + i * (w + ara)) : w, o.Alan.Height);
-            bool secili = i == o.Secili;
-            Doldur(g, r, secili ? Mavi : Color.FromArgb(51, Mavi));
-            TextRenderer.DrawText(g, o.Secenek[i], f, r, secili ? Zemin : Yazi, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+            RectangleF r = Hucre(o, i);
+            float u = o == uzerinde && o.UzerindeSec == i ? o.Uzerinde.Deger : 0;
+            Doldur(g, r, Tema.Karistir(Tema.Renk1Yuzde20, Tema.Renk1Yuzde30, u));
+            Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
         }
+        float s = o.Kay.Deger;
+        if (s >= 0) Doldur(g, Hucre(o, s), Tema.Renk1);
+        for (int i = 0; i < n; i++)
+            Yaz(g, o.Secenek[i], fEtiket, s >= 0 && Math.Abs(s - i) < 0.5f ? Tema.Surface : Tema.TextBody, Hucre(o, i), StringAlignment.Center, StringAlignment.Center, false);
+    }
+
+    void DugmeCiz(Graphics g, Oge o)
+    {
+        RectangleF r = o.Alan;
+        float b = o.Boy.Deger;
+        r.Inflate(r.Width * (b - 1) / 2, r.Height * (b - 1) / 2);
+        if (pilHal == "kapalı")
+        {
+            Doldur(g, r, Tema.Renk1Yuzde20);
+            Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
+            Yaz(g, o.Ad, fDugme, Tema.TextBody, r, StringAlignment.Center, StringAlignment.Center, false);
+            return;
+        }
+        Doldur(g, r, Tema.Renk1);
+        Yaz(g, o.Ad, fDugme, Tema.Surface, r, StringAlignment.Center, StringAlignment.Center, false);
+    }
+
+    void OdakCiz(Graphics g, Oge o)
+    {
+        RectangleF r = o.Eylem != null || o.Secenek != null ? (RectangleF)o.Alan : CubukAlan(o);
+        float b = Math.Max(1f, o.Boy.Deger);
+        r.Inflate(r.Width * (b - 1) / 2, r.Height * (b - 1) / 2);
+        float w = D(Tema.FocusWidth), a = D(Tema.FocusOffset);
+        r.Inflate(a + w, a + w);
+        Cerceve(g, r, Tema.FocusRing, w, D(Tema.Radius) + a + w);
+    }
+
+    string Etiket(Oge o)
+    {
+        if (o != pil) return o.Ad;
+        if (pilHal == "şarjda") return "Pil · şarjda";
+        if (pil.Deger >= 0 && pil.Deger < 0.25f) return "Pil · düşük";
+        return "Pil";
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
+        Esitle();
         Graphics g = e.Graphics;
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        using (Font f = new Font("Segoe UI", 12f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Font fb = new Font("Segoe UI", 20f, FontStyle.Bold, GraphicsUnit.Pixel))
-        using (Pen cizgi = new Pen(Color.FromArgb(51, Mavi)))
+        g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+        g.Clear(Tema.Surface);
+        int k = D(Tema.PanelPadding), gen = ClientSize.Width;
+        Cerceve(g, new RectangleF(0, 0, gen, ClientSize.Height), Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.WindowRadius));
+        if (ayrac >= 0) using (Pen p = new Pen(Tema.BorderDecorative, D(Tema.BorderWidth))) g.DrawLine(p, k, ayrac, gen - k, ayrac);
+        foreach (Oge o in ogeler)
         {
-            g.DrawLine(cizgi, Kenar, ayrac, Genislik - Kenar, ayrac);
-            foreach (Oge o in ogeler)
+            if (o.Gizli) continue;
+            if (o.Ipucu != null) { Yaz(g, o.Ipucu, fGovde, Tema.TextBody, o.Alan, StringAlignment.Near, StringAlignment.Near, true); continue; }
+            if (o.Eylem != null) DugmeCiz(g, o);
+            else
             {
-                if (o.Gizli) continue;
-                string ad = o == pil && pilHal != "" ? "PİL · " + pilHal.ToUpper(Tr) : o.Ad;
-                TextRenderer.DrawText(g, ad, f, new Point(Kenar - 1, o.Y + 6), Mavi, TextFormatFlags.NoPadding);
-                if (o.Secenek != null) { SecimCiz(g, o, f); continue; }
-                string deger = o.Deger < 0 ? "—" : o.Bicim(o.Deger);
-                Size s = TextRenderer.MeasureText(g, deger, fb, Size.Empty, TextFormatFlags.NoPadding);
-                TextRenderer.DrawText(g, deger, fb, new Point(Genislik - Kenar - s.Width, o.Y - 2), Yazi, TextFormatFlags.NoPadding);
-                CubukCiz(g, o);
+                RectangleF bas = new RectangleF(k, o.Y, gen - 2 * k, baslik);
+                Yaz(g, Etiket(o), fEtiket, Tema.TextLabel, bas, StringAlignment.Near, StringAlignment.Center, false);
+                if (o.Secenek != null) SecimCiz(g, o);
+                else
+                {
+                    Yaz(g, o.Deger < 0 ? "—" : o.Bicim(o.Deger), fDeger, o.YaziRenk, bas, StringAlignment.Far, StringAlignment.Center, false);
+                    CubukCiz(g, o);
+                }
             }
+            if (klavye && o == odak) OdakCiz(g, o);
         }
     }
 
     Oge Bul(Point p)
     {
-        foreach (Oge o in ogeler)
-        {
-            Rectangle r = o.Alan;
-            r.Inflate(0, o.Secenek == null ? 10 : 2);
-            if (!o.Kilitli && !o.Gizli && r.Contains(p)) return o;
-        }
+        foreach (Oge o in ogeler) if (o.Odaklanir && o.Alan.Contains(p)) return o;
         return null;
     }
+
+    int HucreBul(Oge o, int x)
+    {
+        int n = o.Secenek.Length;
+        return Math.Max(0, Math.Min(n - 1, (x - o.Alan.X) * n / o.Alan.Width));
+    }
+
+    void UzerindeAyarla(Oge o, int x)
+    {
+        int h = o != null && o.Secenek != null ? HucreBul(o, x) : -1;
+        if (o == uzerinde && (o == null || h == o.UzerindeSec)) return;
+        if (uzerinde != null) { uzerinde.Uzerinde.Ata(0); uzerinde.UzerindeSec = -1; }
+        uzerinde = o;
+        if (o != null) { o.UzerindeSec = h; o.Uzerinde.Ata(0); o.Uzerinde.Git(1, Tema.Fast, Tema.Cik); }
+        foreach (Oge d in ogeler) if (d.Eylem != null) BoyAyarla(d);
+        Invalidate();
+    }
+
+    void BoyAyarla(Oge o) { o.Boy.Git(o == basili ? Tema.ScalePress : o == uzerinde ? Tema.ScaleHover : 1f, Tema.Fast, Tema.Cik); }
 
     void Degisti(Oge o) { if (o.Kalici) { kaydetSaat.Stop(); kaydetSaat.Start(); } Invalidate(); }
 
     void Surukle(Oge o, int x)
     {
-        float f = Math.Max(0f, Math.Min(1f, (x - o.Alan.X) / (float)o.Alan.Width));
-        o.Ayar(f);
+        o.Ayar(Math.Max(0f, Math.Min(1f, (x - o.Alan.X) / (float)o.Alan.Width)));
         Degisti(o);
     }
 
-    void Tikla(Oge o, int x)
+    void SecimYap(Oge o, int i)
     {
-        int n = o.Secenek.Length;
-        int i = Math.Max(0, Math.Min(n - 1, (x - o.Alan.X) * n / o.Alan.Width));
+        i = Math.Max(0, Math.Min(o.Secenek.Length - 1, i));
         if (i == o.Secili) return;
         o.Secili = i;
         o.Sec(i);
@@ -1011,35 +1406,90 @@ class SesPaneli : Form
 
     protected override void OnMouseDown(MouseEventArgs e)
     {
+        klavye = false;
         Oge o = Bul(e.Location);
-        if (o == null) return;
-        if (o.Secenek != null) { Tikla(o, e.X); return; }
+        if (o == null) { Invalidate(); return; }
+        odak = o;
+        if (o.Eylem != null) { basili = o; BoyAyarla(o); Invalidate(); return; }
+        if (o.Secenek != null) { SecimYap(o, HucreBul(o, e.X)); return; }
         surukle = o;
         Surukle(o, e.X);
     }
 
     protected override void OnMouseMove(MouseEventArgs e)
     {
-        Cursor = Bul(e.Location) != null || surukle != null ? Cursors.Hand : Cursors.Default;
+        Oge o = Bul(e.Location);
+        UzerindeAyarla(o, e.X);
+        Cursor = o != null || surukle != null ? Cursors.Hand : Cursors.Default;
         if (surukle != null) Surukle(surukle, e.X);
     }
 
-    protected override void OnMouseUp(MouseEventArgs e) { surukle = null; }
+    protected override void OnMouseLeave(EventArgs e) { base.OnMouseLeave(e); UzerindeAyarla(null, 0); }
+
+    protected override void OnMouseUp(MouseEventArgs e)
+    {
+        surukle = null;
+        Oge b = basili;
+        if (b == null) return;
+        basili = null;
+        BoyAyarla(b);
+        Invalidate();
+        if (Bul(e.Location) == b) b.Eylem();
+    }
 
     protected override void OnMouseWheel(MouseEventArgs e)
     {
         Oge o = Bul(e.Location);
-        if (o == null) return;
+        if (o == null || o.Eylem != null) return;
         int yon = e.Delta > 0 ? 1 : -1;
-        if (o.Secenek != null)
-        {
-            int i = Math.Max(0, Math.Min(o.Secenek.Length - 1, (o.Secili < 0 ? 0 : o.Secili) + yon));
-            if (i == o.Secili) return;
-            o.Secili = i; o.Sec(i); Degisti(o);
-            return;
-        }
+        if (o.Secenek != null) { SecimYap(o, (o.Secili < 0 ? 0 : o.Secili) + yon); return; }
         if (o.Deger < 0) return;
         o.Ayar(Math.Max(0f, Math.Min(1f, o.Deger + yon * o.Adim)));
         Degisti(o);
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys tuslar)
+    {
+        Keys t = tuslar & Keys.KeyCode;
+        bool shift = (tuslar & Keys.Shift) != 0;
+        if (t == Keys.Escape) { Kapan(); return true; }
+        List<Oge> l = ogeler.Where(o => o.Odaklanir).ToList();
+        if (l.Count == 0) return base.ProcessCmdKey(ref msg, tuslar);
+        if (t == Keys.Tab || t == Keys.Up || t == Keys.Down)
+        {
+            bool geri = t == Keys.Up || (t == Keys.Tab && shift);
+            int i = l.IndexOf(odak);
+            i = i < 0 || !klavye ? (i < 0 ? (geri ? l.Count - 1 : 0) : i) : (i + (geri ? -1 : 1) + l.Count) % l.Count;
+            odak = l[i];
+            klavye = true;
+            Invalidate();
+            return true;
+        }
+        if (odak == null || !odak.Odaklanir) return base.ProcessCmdKey(ref msg, tuslar);
+        Oge o2 = odak;
+        if (o2.Eylem != null)
+        {
+            if (t != Keys.Enter && t != Keys.Space) return base.ProcessCmdKey(ref msg, tuslar);
+            klavye = true;
+            o2.Eylem();
+            return true;
+        }
+        if (t != Keys.Left && t != Keys.Right && t != Keys.Home && t != Keys.End) return base.ProcessCmdKey(ref msg, tuslar);
+        klavye = true;
+        if (o2.Secenek != null)
+        {
+            int c = o2.Secili < 0 ? 0 : o2.Secili;
+            SecimYap(o2, t == Keys.Left ? c - 1 : t == Keys.Right ? c + 1 : t == Keys.Home ? 0 : o2.Secenek.Length - 1);
+            Invalidate();
+            return true;
+        }
+        if (o2.Deger >= 0)
+        {
+            float v = t == Keys.Left ? o2.Deger - o2.Adim : t == Keys.Right ? o2.Deger + o2.Adim : t == Keys.Home ? 0f : 1f;
+            o2.Ayar(Math.Max(0f, Math.Min(1f, v)));
+            Degisti(o2);
+        }
+        Invalidate();
+        return true;
     }
 }
