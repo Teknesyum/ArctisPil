@@ -151,7 +151,6 @@ class Uygulama : ApplicationContext
 
     readonly NotifyIcon tepsi = new NotifyIcon();
     readonly System.Windows.Forms.Timer pilSaat = new System.Windows.Forms.Timer();
-    readonly System.Windows.Forms.Timer rampa = new System.Windows.Forms.Timer();
     readonly SynchronizationContext ui;
     readonly ToolStripMenuItem aktarmaMenu;
     readonly ToolStripMenuItem baslangicMenu;
@@ -165,8 +164,6 @@ class Uygulama : ApplicationContext
     int seviye = -1, durum = -1;
     bool dusukUyarildi;
     int dugme = -1;
-    bool yukseltildi;
-    float eskiSeviye, hedef, sonAyar;
     Icon simge;
     readonly SesPaneli panel;
 
@@ -179,7 +176,7 @@ class Uygulama : ApplicationContext
 
         ContextMenuStrip m = new ContextMenuStrip();
         durumMenu = new ToolStripMenuItem("Bağlanıyor…") { Enabled = false };
-        aktarmaMenu = new ToolStripMenuItem("Ses aktarma", null, (s, e) => { aktarmaMenu.Checked = !aktarmaMenu.Checked; if (!aktarmaMenu.Checked) GeriAl(); }) { Checked = true };
+        aktarmaMenu = new ToolStripMenuItem("Ses aktarma (20-80)", null, (s, e) => aktarmaMenu.Checked = !aktarmaMenu.Checked) { Checked = true };
         baslangicMenu = new ToolStripMenuItem("Windows ile başlat", null, (s, e) => Baslangic(!baslangicMenu.Checked));
         m.Items.Add(durumMenu);
         m.Items.Add(new ToolStripMenuItem("Pili şimdi yenile", null, (s, e) => Sorgula()));
@@ -203,7 +200,6 @@ class Uygulama : ApplicationContext
         panel.KulaklikAyar = v => { dugme = v; Gonder(0x06, 0x25, (byte)v); };
         panel.AncAyar = i => Gonder(0x06, 0xBD, (byte)i);
         panel.SeffafAyar = l => Gonder(0x06, 0xB9, (byte)l);
-        panel.YanAyar = i => Gonder(0x06, 0x39, (byte)i);
         panel.MikAyar = l => Gonder(0x06, 0x37, (byte)l);
         panel.Kaydet = () => { Gonder(0x06, 0x09); Log("ayarlar cihaza kaydedildi"); };
         tepsi.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) panel.Ac(); };
@@ -214,8 +210,6 @@ class Uygulama : ApplicationContext
         pilSaat.Tick += (s, e) => Sorgula();
         pilSaat.Start();
 
-        rampa.Interval = 40;
-        rampa.Tick += (s, e) => RampaAdim();
 
         Thread t = new Thread(Baglanti) { IsBackground = true };
         t.Start();
@@ -272,12 +266,12 @@ class Uygulama : ApplicationContext
             if (n > 15 && b[0] == 0x06 && b[1] == 0xB0)
             {
                 int sv = b[6], du = b[15], sf = b[8], an = b[10];
-                ui.Post(_ => { PilGeldi(sv, du); panel.Ayarlar(an, sf, -1, -1); }, null);
+                ui.Post(_ => { PilGeldi(sv, du); panel.Ayarlar(an, sf, -1); }, null);
             }
             else if (n > 18 && b[0] == 0x06 && b[1] == 0x20)
             {
-                int v = b[3], mk = b[17], yn = b[18];
-                ui.Post(_ => { if (dugme < 0) dugme = v; panel.Dugme = v; panel.Ayarlar(-1, -1, yn, mk); }, null);
+                int v = b[3], mk = b[17];
+                ui.Post(_ => { if (dugme < 0) dugme = v; panel.Dugme = v; panel.Ayarlar(-1, -1, mk); }, null);
             }
             else if (n > 1 && b[0] == 0x07 && b[1] != 0x25 && b[1] != 0x45)
             {
@@ -336,55 +330,26 @@ class Uygulama : ApplicationContext
         if (yuzde > 25 || du == 0x02) dusukUyarildi = false;
     }
 
+    const int Ust = 11, Alt = 45;
+
     void DugmeGeldi(int v)
     {
-        int once = dugme;
         dugme = v;
         panel.Dugme = v;
-        if (!aktarmaMenu.Checked) return;
+        if (!aktarmaMenu.Checked || (v >= Ust && v <= Alt)) return;
         try
         {
-            if (v == 0 && once != 0 && !yukseltildi)
-            {
-                eskiSeviye = Ses.Seviye();
-                if (eskiSeviye >= 0.995f) return;
-                yukseltildi = true;
-                hedef = 1f;
-                sonAyar = eskiSeviye;
-                Yaz();
-                rampa.Start();
-                Log(string.Format("aktarma: Windows %{0:F0} → %100", eskiSeviye * 100));
-            }
-            else if (v > 0 && yukseltildi) GeriAl();
-        }
-        catch (Exception e) { Log("ses: " + e.Message); }
-    }
-
-    void GeriAl()
-    {
-        if (!yukseltildi) return;
-        yukseltildi = false;
-        float simdi = Ses.Seviye();
-        Sil();
-        if (Math.Abs(simdi - sonAyar) > 0.02f) { rampa.Stop(); Log("aktarma: elle değiştirilmiş, geri alınmadı"); return; }
-        hedef = eskiSeviye;
-        rampa.Start();
-        Log(string.Format("aktarma geri: Windows → %{0:F0}", eskiSeviye * 100));
-    }
-
-    void RampaAdim()
-    {
-        try
-        {
-            float simdi = Ses.Seviye();
-            if (Math.Abs(simdi - sonAyar) > 0.02f) { rampa.Stop(); yukseltildi = false; Sil(); Log("aktarma: elle değiştirildi, durdu"); return; }
-            float adim = 0.02f;
-            float yeni = simdi < hedef ? Math.Min(hedef, simdi + adim) : Math.Max(hedef, simdi - adim);
+            float win = Ses.Seviye();
+            int sinir = v < Ust ? Ust : Alt;
+            float fark = (sinir - v) / 56f;
+            if ((fark > 0 && win >= 0.995f) || (fark < 0 && win <= 0.005f)) return;
+            float yeni = Math.Max(0f, Math.Min(1f, (float)Math.Round((win + fark) * 100) / 100f));
             Ses.Ayarla(yeni);
-            sonAyar = Ses.Seviye();
-            if (Math.Abs(yeni - hedef) < 0.001f) rampa.Stop();
+            Gonder(0x06, 0x25, (byte)sinir);
+            dugme = sinir;
+            panel.Dugme = sinir;
         }
-        catch (Exception e) { rampa.Stop(); Log("rampa: " + e.Message); }
+        catch (Exception e) { Log("aktarma: " + e.Message); }
     }
 
     const string Depo = "https://github.com/Teknesyum/ArctisPil";
@@ -450,7 +415,6 @@ class Uygulama : ApplicationContext
 
     void Kapat()
     {
-        GeriAlAni();
         calisiyor = false;
         Kapat2();
         tepsi.Visible = false;
@@ -458,15 +422,6 @@ class Uygulama : ApplicationContext
         ExitThread();
     }
 
-    void GeriAlAni()
-    {
-        if (!yukseltildi) return;
-        try { if (Math.Abs(Ses.Seviye() - sonAyar) <= 0.02f) Ses.Ayarla(eskiSeviye); } catch { }
-        yukseltildi = false;
-        Sil();
-    }
-
-    void Yaz() { try { File.WriteAllText(durumYol, eskiSeviye.ToString(System.Globalization.CultureInfo.InvariantCulture)); } catch { } }
     void Sil() { try { File.Delete(durumYol); } catch { } }
 
     void AcilistaGeriAl()
@@ -519,17 +474,18 @@ class SesPaneli : Form
         public float Adim = 0.02f;
         public bool Kalici;
         public bool Kilitli;
+        public bool Gizli;
     }
 
     readonly List<Oge> ogeler = new List<Oge>();
-    readonly Oge pil, kul, win, anc, seffaf, yan, mik;
-    readonly int ayrac, yukseklik;
+    readonly Oge pil, kul, win, anc, seffaf, mik;
+    int ayrac, yukseklik, kulV = -1;
     Oge surukle;
     DateTime kapanis;
     readonly System.Windows.Forms.Timer yenile = new System.Windows.Forms.Timer();
     readonly System.Windows.Forms.Timer kaydetSaat = new System.Windows.Forms.Timer();
 
-    public Action<int> KulaklikAyar, AncAyar, SeffafAyar, YanAyar, MikAyar;
+    public Action<int> KulaklikAyar, AncAyar, SeffafAyar, MikAyar;
     public Action Kaydet, Acildi;
 
     public SesPaneli()
@@ -541,31 +497,25 @@ class SesPaneli : Form
         BackColor = Zemin;
         DoubleBuffered = true;
 
-        int y = 18;
-        pil = Cubuk("PİL", Basari(), ref y, f => "%" + Math.Round(f * 100));
+        pil = Cubuk("PİL", Basari(), f => "%" + Math.Round(f * 100));
         pil.Kilitli = true;
-        kul = Cubuk("KULAKLIK SES", Mavi, ref y, f => "%" + Math.Round(f * 100));
-        kul.Adim = 1f / 56;
-        kul.Ayar = f => { int v = (int)Math.Round((1 - f) * 56); kul.Deger = (56 - v) / 56f; if (KulaklikAyar != null) KulaklikAyar(v); };
-        win = Cubuk("WINDOWS SES", Pembe, ref y, f => "%" + Math.Round(f * 100));
-        win.Ayar = f => { try { Ses.Ayarla(f); win.Deger = f; } catch { } };
-        ayrac = y - 6;
-        y += 12;
-        anc = Secim("GÜRÜLTÜ ENGELLEME", new[] { "KAPALI", "ŞEFFAF", "ANC" }, ref y);
-        anc.Sec = i => { if (AncAyar != null) AncAyar(i); };
-        seffaf = Cubuk("ŞEFFAFLIK", Mavi, ref y, f => Math.Round(f * 10) + "/10");
+        kul = Cubuk("KULAKLIK SES", Mavi, KulMetin);
+        kul.Adim = 0.05f;
+        kul.Ayar = f => { int v = (int)Math.Round((1 - Bes(f)) * 56); kul.Deger = (56 - v) / 56f; if (v == kulV) return; kulV = v; if (KulaklikAyar != null) KulaklikAyar(v); };
+        win = Cubuk("WINDOWS SES", Pembe, f => "%" + Math.Round(f * 100));
+        win.Adim = 0.05f;
+        win.Ayar = f => { float p = Bes(f); try { Ses.Ayarla(p); win.Deger = p; } catch { } };
+        anc = Secim("GÜRÜLTÜ ENGELLEME", new[] { "KAPALI", "ŞEFFAF", "ANC" });
+        anc.Sec = i => { Yerlestir(); if (AncAyar != null) AncAyar(i); };
+        seffaf = Cubuk("ŞEFFAFLIK", Mavi, f => Math.Round(f * 10) + "/10");
         seffaf.Adim = 0.1f; seffaf.Kalici = true;
         seffaf.Ayar = f => { int l = Math.Max(1, Math.Min(10, (int)Math.Round(f * 10))); seffaf.Deger = l / 10f; if (SeffafAyar != null) SeffafAyar(l); };
-        yan = Secim("KENDİ SESİN (SIDETONE)", new[] { "KAPALI", "DÜŞÜK", "ORTA", "YÜKSEK" }, ref y);
-        yan.Sec = i => { if (YanAyar != null) YanAyar(i); };
-        mik = Cubuk("MİKROFON", Mavi, ref y, f => Math.Round(f * 10) + "/10");
+        mik = Cubuk("MİKROFON", Mavi, f => Math.Round(f * 10) + "/10");
         mik.Adim = 0.1f; mik.Kalici = true;
         mik.Ayar = f => { int l = Math.Max(1, Math.Min(10, (int)Math.Round(f * 10))); mik.Deger = l / 10f; if (MikAyar != null) MikAyar(l); };
-        anc.Kalici = yan.Kalici = true;
-        yukseklik = y + 4;
+        anc.Kalici = true;
+        Yerlestir();
 
-        ClientSize = new Size(Genislik, yukseklik);
-        using (System.Drawing.Drawing2D.GraphicsPath p = Yuvarlak(new Rectangle(0, 0, Genislik, yukseklik), 12)) Region = new Region(p);
         yenile.Interval = 200;
         yenile.Tick += (s, e) => { if (surukle != win) Oku(); Invalidate(); };
         kaydetSaat.Interval = 800;
@@ -574,20 +524,48 @@ class SesPaneli : Form
 
     static Color Basari() { return ColorTranslator.FromHtml("#34d399"); }
 
-    Oge Cubuk(string ad, Color renk, ref int y, Func<float, string> bicim)
+    static float Bes(float f) { return Math.Max(0f, Math.Min(1f, (float)Math.Round(f * 20) / 20f)); }
+
+    static string KulMetin(float f)
     {
-        Oge o = new Oge { Ad = ad, Renk = renk, Y = y, Bicim = bicim, Alan = new Rectangle(Kenar, y + 32, Genislik - 2 * Kenar, Bar) };
+        int v = (int)Math.Round((1 - f) * 56);
+        for (int k = 0; k <= 20; k++) if ((int)Math.Round((1 - k / 20f) * 56) == v) return "%" + k * 5;
+        return "%" + Math.Round(f * 100);
+    }
+
+    Oge Cubuk(string ad, Color renk, Func<float, string> bicim)
+    {
+        Oge o = new Oge { Ad = ad, Renk = renk, Bicim = bicim };
         ogeler.Add(o);
-        y += 58;
         return o;
     }
 
-    Oge Secim(string ad, string[] secenek, ref int y)
+    Oge Secim(string ad, string[] secenek)
     {
-        Oge o = new Oge { Ad = ad, Secenek = secenek, Y = y, Renk = Mavi, Alan = new Rectangle(Kenar, y + 26, Genislik - 2 * Kenar, 28) };
+        Oge o = new Oge { Ad = ad, Secenek = secenek, Renk = Mavi };
         ogeler.Add(o);
-        y += 66;
         return o;
+    }
+
+    void Yerlestir()
+    {
+        seffaf.Gizli = anc.Secili != 1;
+        int y = 18;
+        foreach (Oge o in ogeler)
+        {
+            if (o == anc) { ayrac = y - 6; y += 12; }
+            if (o.Gizli) continue;
+            o.Y = y;
+            if (o.Secenek == null) { o.Alan = new Rectangle(Kenar, y + 32, Genislik - 2 * Kenar, Bar); y += 58; }
+            else { o.Alan = new Rectangle(Kenar, y + 26, Genislik - 2 * Kenar, 28); y += 66; }
+        }
+        if (y + 4 == yukseklik) return;
+        yukseklik = y + 4;
+        int alt = Bottom;
+        ClientSize = new Size(Genislik, yukseklik);
+        using (System.Drawing.Drawing2D.GraphicsPath p = Yuvarlak(new Rectangle(0, 0, Genislik, yukseklik), 12)) Region = new Region(p);
+        if (Visible) Top = alt - yukseklik;
+        Invalidate();
     }
 
     protected override CreateParams CreateParams { get { CreateParams c = base.CreateParams; c.ExStyle |= 0x80; return c; } }
@@ -618,13 +596,12 @@ class SesPaneli : Form
         if (Visible) Invalidate();
     }
 
-    public int Dugme { set { if (surukle != kul) kul.Deger = value < 0 ? -1 : (56 - Math.Min(value, 56)) / 56f; if (Visible) Invalidate(); } }
+    public int Dugme { set { kulV = value; if (surukle != kul) kul.Deger = value < 0 ? -1 : (56 - Math.Min(value, 56)) / 56f; if (Visible) Invalidate(); } }
 
-    public void Ayarlar(int ancMod, int seffafSeviye, int yanSeviye, int mikSeviye)
+    public void Ayarlar(int ancMod, int seffafSeviye, int mikSeviye)
     {
-        if (ancMod >= 0 && ancMod <= 2) anc.Secili = ancMod;
+        if (ancMod >= 0 && ancMod <= 2 && ancMod != anc.Secili) { anc.Secili = ancMod; Yerlestir(); }
         if (surukle != seffaf && seffafSeviye >= 1 && seffafSeviye <= 10) seffaf.Deger = seffafSeviye / 10f;
-        if (yanSeviye >= 0 && yanSeviye <= 3) yan.Secili = yanSeviye;
         if (surukle != mik && mikSeviye >= 1 && mikSeviye <= 10) mik.Deger = mikSeviye / 10f;
         if (Visible) Invalidate();
     }
@@ -680,6 +657,7 @@ class SesPaneli : Form
             g.DrawLine(cizgi, Kenar, ayrac, Genislik - Kenar, ayrac);
             foreach (Oge o in ogeler)
             {
+                if (o.Gizli) continue;
                 string ad = o == pil && pilHal != "" ? "PİL · " + pilHal.ToUpper(Tr) : o.Ad;
                 TextRenderer.DrawText(g, ad, f, new Point(Kenar - 1, o.Y + 6), Mavi, TextFormatFlags.NoPadding);
                 if (o.Secenek != null) { SecimCiz(g, o, f); continue; }
@@ -697,7 +675,7 @@ class SesPaneli : Form
         {
             Rectangle r = o.Alan;
             r.Inflate(0, o.Secenek == null ? 10 : 2);
-            if (!o.Kilitli && r.Contains(p)) return o;
+            if (!o.Kilitli && !o.Gizli && r.Contains(p)) return o;
         }
         return null;
     }

@@ -9,13 +9,13 @@ Tray control for Arctis Nova Pro Wireless.
 | Measure | Value |
 |---|---|
 | Similar projects surveyed | 37 |
-| HID commands used, each backed by 2+ public sources | 8 |
+| HID commands used, each backed by 2+ public sources | 7 |
 | Commands checked on real hardware (PID 12E0) | 3 (`06 B0`, `06 20`, `06 25`) |
 | Dependencies | 0 (.NET Framework 4, ships with Windows) |
 
 ## What It Is
 
-ArctisPil is a single Windows tray program for the SteelSeries Arctis Nova Pro Wireless base station. The tray icon shows the battery percentage. A left click opens a panel with the battery, headset volume, Windows volume, noise cancelling, transparency, sidetone and microphone level; every row except the battery can be changed from the panel. It talks to the base station over HID and does not need SteelSeries GG running.
+ArctisPil is a single Windows tray program for the SteelSeries Arctis Nova Pro Wireless base station. The tray icon shows the battery percentage. A left click opens a panel with the battery, headset volume, Windows volume, noise cancelling, transparency (shown only in transparency mode) and microphone level; every row except the battery can be changed from the panel. It talks to the base station over HID and does not need SteelSeries GG running.
 
 ## Doesn't SteelSeries GG Already Do This?
 
@@ -23,15 +23,15 @@ GG does all of this and much more: Sonar, per-app mixing, EQ editing, firmware u
 
 - **Battery in the tray** as a number, colored by level, blue while charging, with a warning at 25%.
 - **One panel for both volumes.** The headset volume and the Windows volume sit next to each other; both can be dragged or scrolled.
-- **Volume overflow.** When the base-station dial reaches the top, Windows volume ramps to 100%; turning the dial down brings it back.
-- **No background suite.** One 31 KB exe, no services, no account.
+- **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the headset is set back to 80% while the extra points go to Windows; below 20% the headset returns to 20% and the difference comes off Windows.
+- **Round numbers.** Both volume bars snap to 5% steps on drag and wheel.
+- **No background suite.** One 30 KB exe, no services, no account.
 
 ## Features
 
 - **Battery icon** — percentage drawn in the tray icon, refreshed every minute and on every headset event.
 - **Headset volume** — read at start, follows the dial, settable from the panel (`06 25`).
 - **Noise cancelling** — Off / Transparency / ANC, and the transparency level 1-10.
-- **Sidetone** — Off / Low / Medium / High.
 - **Microphone level** — 1-10.
 - **Settings saved to the device** — changes are written to the base station 0.8 s after the last change (`06 09`), so they survive a power cycle.
 
@@ -53,11 +53,10 @@ The base station exposes a vendor HID interface (interface 4). Commands go to th
 | Command | Meaning |
 |---|---|
 | `06 B0` | status: battery `[6]`, headset state `[15]`, transparency `[8]`, ANC mode `[10]` |
-| `06 20` | audio status: volume `[3]`, microphone `[17]`, sidetone `[18]` |
+| `06 20` | audio status: volume `[3]`, microphone `[17]` |
 | `06 25 v` | headset volume, 0 = loudest, 56 = silent |
 | `06 BD m` | 0 off, 1 transparency, 2 ANC |
 | `06 B9 l` | transparency level 1-10 |
-| `06 39 s` | sidetone 0-3 |
 | `06 37 l` | microphone level 1-10 |
 | `06 09` | save settings to the device |
 
@@ -65,7 +64,7 @@ Any `07 xx` event other than the dial triggers a fresh `06 B0` / `06 20` read, s
 
 ## Program Shows What It Does
 
-![The panel: battery, headset volume, Windows volume, noise cancelling, transparency, sidetone and microphone rows.](assets/panel.png)
+![The panel: battery, headset volume, Windows volume, noise cancelling, transparency and microphone rows.](assets/panel.png)
 
 ## Development
 
