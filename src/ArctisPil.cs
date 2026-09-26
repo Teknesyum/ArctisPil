@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Drawing;
@@ -174,7 +174,7 @@ class Uygulama : ApplicationContext
         durumYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "aktarma.txt");
         AcilistaGeriAl();
 
-        ContextMenuStrip m = new ContextMenuStrip();
+        ContextMenuStrip m = new ContextMenuStrip { Renderer = new MenuTemasi(), ForeColor = Yazi, ShowImageMargin = false, ShowCheckMargin = true };
         durumMenu = new ToolStripMenuItem("Bağlanıyor…") { Enabled = false };
         aktarmaMenu = new ToolStripMenuItem("Ses aktarma (20-80)", null, (s, e) => aktarmaMenu.Checked = !aktarmaMenu.Checked) { Checked = true };
         baslangicMenu = new ToolStripMenuItem("Windows ile başlat", null, (s, e) => Baslangic(!baslangicMenu.Checked));
@@ -184,9 +184,9 @@ class Uygulama : ApplicationContext
         m.Items.Add(aktarmaMenu);
         m.Items.Add(baslangicMenu);
         m.Items.Add(new ToolStripSeparator());
-        m.Items.Add(new ToolStripMenuItem("Sorun bildir", null, (s, e) => Git(Depo + "/issues/new")));
-        m.Items.Add(new ToolStripMenuItem("GitHub sayfası", null, (s, e) => Git(Depo)));
-        m.Items.Add(new ToolStripMenuItem("Sponsor ol", null, (s, e) => Git("https://github.com/sponsors/Teknesyum")));
+        m.Items.Add(new ToolStripMenuItem("Bize ulaşın", null, (s, e) => Git(Depo + "/issues/new/choose")));
+        m.Items.Add(new ToolStripMenuItem("Teknesyum", null, (s, e) => Git(Depo)) { ForeColor = Mavi });
+        m.Items.Add(new ToolStripMenuItem("Destekle", null, (s, e) => Git("https://github.com/sponsors/Teknesyum")));
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Çıkış", null, (s, e) => Kapat()));
         m.Opening += (s, e) => baslangicMenu.Checked = BaslangicVar();
@@ -461,6 +461,34 @@ class Uygulama : ApplicationContext
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Uygulama());
         }
+    }
+}
+
+class MenuTemasi : ToolStripProfessionalRenderer
+{
+    static readonly Color Zemin = ColorTranslator.FromHtml("#08090a");
+    static readonly Color Mavi = ColorTranslator.FromHtml("#00f3ff");
+    static readonly Color Yazi = ColorTranslator.FromHtml("#ffffff");
+
+    protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Zemin)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
+    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Zemin)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
+    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { using (Pen p = new Pen(Color.FromArgb(51, Mavi))) e.Graphics.DrawRectangle(p, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1); }
+    protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+    {
+        Rectangle r = new Rectangle(2, 0, e.Item.Width - 4, e.Item.Height);
+        using (SolidBrush b = new SolidBrush(e.Item.Selected && e.Item.Enabled ? Color.FromArgb(51, Mavi) : Zemin)) e.Graphics.FillRectangle(b, r);
+    }
+    protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e) { using (Pen p = new Pen(Color.FromArgb(51, Mavi))) e.Graphics.DrawLine(p, 8, e.Item.Height / 2, e.Item.Width - 8, e.Item.Height / 2); }
+    protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+    {
+        e.TextColor = e.Item.Enabled ? e.Item.ForeColor : Color.FromArgb(128, Yazi);
+        base.OnRenderItemText(e);
+    }
+    protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+    {
+        Rectangle r = e.ImageRectangle;
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (Pen p = new Pen(Mavi, 2)) e.Graphics.DrawLines(p, new[] { new Point(r.Left + 3, r.Top + r.Height / 2), new Point(r.Left + r.Width / 2 - 1, r.Bottom - 4), new Point(r.Right - 3, r.Top + 4) });
     }
 }
 
