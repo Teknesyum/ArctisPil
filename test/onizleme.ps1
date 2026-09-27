@@ -14,7 +14,7 @@ $tepsi = New-Object System.Windows.Forms.NotifyIcon
 $tip.GetField('tepsi', $bf).SetValue($u, $tepsi)
 $ciz = $tip.GetMethod('Ciz', $bf)
 $pilYazi = $tema.GetMethod('PilYazi')
-$ornek = @(@('100', 100, $false), @('75', 75, $false), @('50', 50, $false), @('25', 25, $false), @('12', 12, $false), @('0', 0, $false), @('88', 88, $true), @('–', -1, $false), @('?', -1, $false))
+$ornek = @(@('100', 100, $false), @('94', 94, $false), @('75', 75, $false), @('50', 50, $false), @('25', 25, $false), @('12', 12, $false), @('0', 0, $false), @('88', 88, $true), @('–', -1, $false), @('?', -1, $false))
 $tuval = New-Object Drawing.Bitmap (($ornek.Count * 80) + 20), 200
 $g = [Drawing.Graphics]::FromImage($tuval)
 $g.Clear([Drawing.ColorTranslator]::FromHtml('#202A31'))
