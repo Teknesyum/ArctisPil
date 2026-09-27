@@ -1,0 +1,65 @@
+geçti  dolu %100: öğe alanları çakışmıyor (0)
+geçti  dolu %100: öğeler pencere içinde (0 taşma)
+geçti  dolu %100: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %100: genişlik 300 DIP (300)
+geçti  yok %100: öğe alanları çakışmıyor (0)
+geçti  yok %100: öğeler pencere içinde (0 taşma)
+geçti  yok %100: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %100: genişlik 300 DIP (300)
+geçti  dolu %125: öğe alanları çakışmıyor (0)
+geçti  dolu %125: öğeler pencere içinde (0 taşma)
+geçti  dolu %125: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %125: genişlik 300 DIP (375)
+geçti  yok %125: öğe alanları çakışmıyor (0)
+geçti  yok %125: öğeler pencere içinde (0 taşma)
+geçti  yok %125: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %125: genişlik 300 DIP (375)
+geçti  dolu %150: öğe alanları çakışmıyor (0)
+geçti  dolu %150: öğeler pencere içinde (0 taşma)
+geçti  dolu %150: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  dolu %150: genişlik 300 DIP (450)
+geçti  yok %150: öğe alanları çakışmıyor (0)
+geçti  yok %150: öğeler pencere içinde (0 taşma)
+geçti  yok %150: tıklama alanları ≥ 24 DIP (0 küçük)
+geçti  yok %150: genişlik 300 DIP (450)
+geçti  Tab ilk odaklanabilir öğeye gider (Kulaklık sesi)
+geçti  klavye odağı halkayı açar
+geçti  Sağ ok kulaklık sesini artırır (0.61 → 0.64)
+geçti  kulaklığa komut gitti
+geçti  Home değeri sıfırlar
+geçti  End değeri tama çıkarır
+geçti  Tab iki adım sonra Gürültü engelleme
+geçti  Sağ ok segmentte ANC seçer
+geçti  ANC seçilince Şeffaflık gizlenir
+geçti  Sol ok Şeffaf seçer, Şeffaflık görünür
+geçti  Shift+Tab geri gider
+geçti  fare ile Kapalı seçilir
+geçti  fare tıklaması odak halkasını kapatır
+geçti  Esc paneli kapatır
+geçti  kulaklık yokken ipucu ve düğme görünür
+geçti  düğme metni 'Yeniden ara'
+geçti  Tab düğmeye gider
+geçti  Enter yeniden arar
+geçti  tıklama yeniden arar
+geçti  pil gelince düğme kaybolur, kısıtlı açıklaması kalır
+geçti  tam modda ipucu gizli
+geçti  kapalıyken 'Yeniden dene'
+hata: 0
+Sentetik pil: aktif dakikada %1/15, boşta %1/40; 8 saat yoğun (%80 sesli), 8 saat hafif (%10 sesli). Cihaz 8 kademe (tavan).
+döngü 1: süre 2195 dk, ortalama sapma %0,85, en büyük %5,70, %75 anında kalan tahmin/gerçek 0,61, m 14,78, w 0,37, öğrenilen bant 8
+döngü 2: süre 2264 dk, ortalama sapma %0,29, en büyük %1,32, %75 anında kalan tahmin/gerçek 1,04, m 14,92, w 0,37, öğrenilen bant 16
+döngü 3: süre 2365 dk, ortalama sapma %0,29, en büyük %1,00, %75 anında kalan tahmin/gerçek 0,95, m 15,07, w 0,38, öğrenilen bant 24
+döngü 4: süre 2195 dk, ortalama sapma %0,27, en büyük %0,92, %75 anında kalan tahmin/gerçek 0,95, m 14,95, w 0,37, öğrenilen bant 32
+döngü 5: süre 2368 dk, ortalama sapma %0,26, en büyük %0,93, %75 anında kalan tahmin/gerçek 1,03, m 15,02, w 0,38, öğrenilen bant 40
+geçti  tahmin cihaz bandının dışına hiç çıkmadı (13'te bekler, 12'yi geçmez)
+geçti  5. döngü sapması 1. döngüden küçük (0,26 < 0,85)
+geçti  5. döngüde ortalama sapma %2'nin altında (0,26)
+geçti  boşta ağırlığı w gerçeğe yakın (gerçek 0,375; bulunan 0,38)
+geçti  kalan süre tahmini %20 içinde (oran 1,03)
+geçti  kaydet/yükle aynı tahmini verir (98 = 98)
+geçti  şarjda cihaz değeri gösterilir (75)
+geçti  şarj bitip 8'e dönünce temiz başlangıç, %100
+geçti  iki kademe birden düşüş öğrenilmez (kesik)
+geçti  3 saatten uzun boşluk bandı kesik yapar
+gerçek kayıt oynatıldı: kademe 8, tahmin %91, aralık %87-100, aktif 105 dk, boş 13 dk, kesik False, öğrenilen bant 0
+hata: 0

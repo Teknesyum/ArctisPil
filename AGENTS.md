@@ -5,7 +5,7 @@ Tray battery app for headsets; full panel for SteelSeries Arctis Nova Pro Wirele
 - `src/HeadsetBatteryTray.cs` — whole app, .NET Framework 4 WinForms, single file. `Uygulama.Ad`/`Surum` drive name, version, log, mutex, Run key (old `ArctisPil` key is removed).
 - `build.ps1` — framework csc → `bin/HeadsetBatteryTray.exe`; embeds `vendor/headsetcontrol.exe` as a resource. UI font is system Segoe UI (owner's choice); tray digits at 16 px are a hand-drawn pixel set.
 - `test/` — HID probes (`dinle.ps1`, `komut-dene.ps1`), `onizleme.ps1` (every state at 100/125/150%), `panel-test.ps1` (headless layout/keyboard), `kontrast.ps1`, `pencere.ps1` (real window), `hc-coz.ps1`, `bt-pil.ps1`.
-- UI: `Tema` holds teknesyum-ui `benim` tokens (C# 5 port of `teknesyum-ui/winforms/Palette.cs`); colors only from `Tema`. Audit: `docs/ui-denetim/`.
+- UI: `build.ps1` lowers generated `teknesyum-ui/winforms/Palette.cs` + `theme.tokens.json` (durations, easings, tone scale) to C# 5 in `bin/obj/Duzen.cs`; `Tema` only aliases it. Menu brand/support text from embedded `labels.tr.json` (`Etiket.Al`). Exe icon drawn from tokens by `simge.ps1`. Owner exceptions: battery red `#FF9898`, taskbar `#202A31`. Audit: `docs/ui-denetim/`.
 - `docs/` — `plan.md`, `plan-ses-koruma.md` (Loudness Equalization toggle, plan only), `devices.csv` (popular 50).
 - `rapor/` (gitignored, Turkish) — research.
 

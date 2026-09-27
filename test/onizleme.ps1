@@ -1,4 +1,4 @@
-﻿param([string]$Cikti = (Join-Path $PSScriptRoot '..\docs\ui-denetim\2026-09-27'), [string]$Ek = 'sonra')
+﻿param([string]$Cikti = (Join-Path $PSScriptRoot '..\docs\ui-denetim\2026-09-27'), [string]$Ek = 'sonra', [int[]]$Gercek = @(91, 75, 2, 10, 60))
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 $asm = [Reflection.Assembly]::LoadFrom((Join-Path $PSScriptRoot '..\bin\HeadsetBatteryTray.exe'))
@@ -44,6 +44,7 @@ function Panel($olcek, $durum) {
         'yok' { $p.Kisitli = $true; $p.PilAyarla(-1, 'yok') }
         'kisitli' { $p.Kisitli = $true; $p.PilAyarla(75, '') }
         'kapali' { $p.PilAyarla(-1, 'kapalı') }
+        'gercek' { $p.PilAyarla($Gercek[0], ''); $p.Dugme = [int][math]::Round(56 - $Gercek[1] * 56 / 100); $p.Ayarlar($Gercek[2], 7, $Gercek[3]) }
         default {
             $pil = @{ 'dolu' = 50; 'dusuk' = 12; 'sarj' = 62; 'odak' = 37; 'uzerinde' = 88 }[$durum]
             $p.PilAyarla($pil, $(if ($durum -eq 'sarj') { 'şarjda' } else { '' }))
@@ -51,7 +52,7 @@ function Panel($olcek, $durum) {
             $p.Ayarlar($(if ($durum -eq 'dusuk') { 2 } else { 1 }), 7, 10)
         }
     }
-    $w = Oge $p 'win'; $w.GetType().GetField('Deger').SetValue($w, [single]0.67)
+    $w = Oge $p 'win'; $w.GetType().GetField('Deger').SetValue($w, [single]$(if ($durum -eq 'gercek') { $Gercek[4] / 100 } else { 0.67 }))
     if ($durum -eq 'odak') { Kur $p 'odak' (Oge $p 'kul'); Kur $p 'klavye' $true }
     if ($durum -eq 'uzerinde') {
         $a = Oge $p 'anc'; $a.GetType().GetField('UzerindeSec').SetValue($a, 0)
@@ -76,6 +77,7 @@ foreach ($ad in $olcekler.Keys) {
         Kaydet $p (Join-Path $Cikti "panel-$d-$ad-$Ek.png")
         $p.Dispose()
     }
+    if ($ad -eq '100') { $p = Panel 1.0 'gercek'; Kaydet $p (Join-Path $Cikti "panel-gercek-onizleme-100-$Ek.png"); $p.Dispose() }
     $p = Panel $olcekler[$ad] 'yok'
     $dg = Oge $p 'dugmeOge'
     Kur $p 'odak' $dg; Kur $p 'klavye' $true
@@ -86,16 +88,19 @@ foreach ($ad in $olcekler.Keys) {
     $tema.GetField('olcek', $bf).SetValue($null, [single]$olcekler[$ad])
     $m = New-Object System.Windows.Forms.ContextMenuStrip
     $tema.Assembly.GetType('MenuTemasi').GetMethod('Uygula').Invoke($null, [object[]]@($m.psobject.BaseObject))
-    $d0 = New-Object System.Windows.Forms.ToolStripMenuItem "HeadsetBatteryTray v0.3.2"; $d0.Enabled = $false; [void]$m.Items.Add($d0)
+    $uy = $tema.Assembly.GetType('Uygulama')
+    $etk = $tema.Assembly.GetType('Etiket').GetMethod('Al')
+    $d0 = New-Object System.Windows.Forms.ToolStripMenuItem ($uy.GetField('Ad').GetValue($null) + ' v' + $uy.GetField('Surum').GetValue($null)); $d0.Enabled = $false; [void]$m.Items.Add($d0)
     $d1 = New-Object System.Windows.Forms.ToolStripMenuItem 'Arctis pil: %50'; $d1.Enabled = $false; [void]$m.Items.Add($d1)
     [void]$m.Items.Add('Pili şimdi yenile')
     [void]$m.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
     $a = New-Object System.Windows.Forms.ToolStripMenuItem 'Ses aktarma (20-80)'; $a.Checked = $true; [void]$m.Items.Add($a)
+    $tm = New-Object System.Windows.Forms.ToolStripMenuItem 'Pil tahmini (%1 adım)'; $tm.Checked = $true; [void]$m.Items.Add($tm)
     [void]$m.Items.Add('Windows ile başlat')
     [void]$m.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
     [void]$m.Items.Add('Bize ulaşın')
-    $t = New-Object System.Windows.Forms.ToolStripMenuItem 'Teknesyum'; $t.ForeColor = Renk 'Renk1'; [void]$m.Items.Add($t)
-    [void]$m.Items.Add('Destekle')
+    $t = New-Object System.Windows.Forms.ToolStripMenuItem ($etk.Invoke($null, @('sig.brand'))); $t.ForeColor = Renk 'Renk1'; [void]$m.Items.Add($t)
+    [void]$m.Items.Add($etk.Invoke($null, @('sig.support')))
     [void]$m.Items.Add((New-Object System.Windows.Forms.ToolStripSeparator))
     [void]$m.Items.Add('Çıkış')
     $m.Show(-3000, -3000)

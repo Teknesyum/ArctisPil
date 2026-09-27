@@ -127,8 +127,8 @@ public static class Palette
 
     public const int    TargetMin             = 24;
     public const int    ScrollbarWidth        = 3;
-    public const int    TitleBarHeightMin     = 32;
-    public const int    TitleBarHeightMax     = 40;
+    public const int    TitleBarHeightMin     = 28;
+    public const int    TitleBarHeightMax     = 28;
     public const int    SidebarWidth          = 240;
     public const int    SidebarCollapsedWidth = 48;
     public const int    InputHeight           = 40;
@@ -141,6 +141,18 @@ public static class Palette
     public const int    IconSize2 = 16;
     public const int    IconSize3 = 22;
     public const int    IconSize4 = 56;
+    public const double ButtonHeight   = 28;
+    public const double ButtonPaddingX = 10;
+    public const double GlassBlur      = 0;
+    public const double BgAngle        = 160;
+    public const bool   BgRotate       = false;
+    public const string BackgroundType = "flat";
+    public const string ScrollbarStyle = "fade";
+    public const string ScrollBehavior = "auto";
+    public static readonly Color WindowEdge          = Color.Transparent;
+    public static readonly Color ScrollbarThumb      = Color.FromArgb(0xFF, 0xAC, 0x7F, 0xFF);
+    public static readonly Color ScrollbarThumbHover = Color.FromArgb(0xFF, 0xCB, 0xA7, 0xD2);
+    public static readonly Color ScrollbarTrack      = Color.FromArgb(0x4D, 0x00, 0x00, 0x00);
 
     public const double ScaleHover     = 1.02;
     public const double ScalePress     = 0.98;

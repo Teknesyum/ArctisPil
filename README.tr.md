@@ -19,6 +19,24 @@ HeadsetBatteryTray tek bir Windows tepsi programıdır. Tepsi simgesi kulaklık 
 
 Pili sırayla üç yoldan okur: SteelSeries Arctis Nova Pro Wireless için doğrudan HID, yaklaşık 40 kablolu ve dongle'lı kulaklık için (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze ve diğerleri) gömülü [HeadsetControl](https://github.com/Sapd/HeadsetControl), Bluetooth kulaklıklar için Windows'un Bluetooth pil değeri. Üretici yazılımının açık olması gerekmez.
 
+## Bunu HeadsetControl Zaten Yapmıyor mu?
+
+HeadsetControl komut satırından pili okur ve ayarları değiştirir; bunu iyi yapar. Bu program çoğu kulaklık için onu kullanır. Eklediği:
+
+- Çalıştırdığın bir komut yerine ekranda duran bir tepsi sayısı.
+- Nova Pro için doğrudan HID: ses, gürültü engelleme ve mikrofon bir süreci yoklamadan anında güncellenir.
+- Kulaklık ile Windows arasında ses aktarma; hiçbir komut bunu sunmaz.
+- Cihazın %12,5'lik adımları arasında %1'lik pil tahmini.
+
+## Özellikler
+
+- **Tepside pil.** 16 px piksel rakam seti, yeşilden maviye ve kırmızıya renklenir, şarjda beyaz.
+- **Nova Pro paneli.** Pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık ve mikrofon tek pencerede.
+- **Ses aktarma.** Kulaklık %20 ile %80 arasında kalır; fazlası Windows'a geçer.
+- **%1 tahmin.** Kendi boşalmalarından öğrenilir, bir sonraki cihaz adımını asla geçmez.
+- **Üç kaynak.** Doğrudan HID, gömülü HeadsetControl, Windows Bluetooth pili.
+- **Klavye ve ölçek.** Her denetim klavyeden çalışır; panel ekran ölçeğini ve animasyon ayarını izler.
+
 ## Arctis Nova Pro Wireless Paneli
 
 Nova Pro tam paneli alır: pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık (yalnız şeffaf modda) ve mikrofon seviyesi.
@@ -69,7 +87,7 @@ Nova yoksa dakikada bir bakar: önce `headsetcontrol -b -o json`, sonra Windows'
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-Programın tamamı `src/HeadsetBatteryTray.cs`. `build.ps1`, `vendor/headsetcontrol.exe` varsa onu gömer. `test/komut-dene.ps1 -Komut 06-B0` tek bir ham rapor gönderir; `test/onizleme.ps1` simgeyi, menüyü ve panelin her hâlini %100/125/150'de PNG'ye çizer; `test/panel-test.ps1` yerleşimi, klavyeyi ve fareyi başsız dener; `test/kontrast.ps1` her renk çiftini ölçer; `test/pencere.ps1` çalışan paneli yakalar; `test/hc-coz.ps1` ve `test/bt-pil.ps1` HeadsetControl ve Bluetooth okuyucularını dener.
+Programın tamamı `src/HeadsetBatteryTray.cs`. `build.ps1`, `vendor/headsetcontrol.exe` varsa onu gömer, temayı `teknesyum-ui/` altından üretir ve exe simgesini `simge.ps1` ile çizer. `test/komut-dene.ps1 -Komut 06-B0` tek bir ham rapor gönderir; `test/onizleme.ps1` simgeyi, menüyü ve panelin her hâlini %100/125/150'de PNG'ye çizer; `test/panel-test.ps1` yerleşimi, klavyeyi ve fareyi başsız dener; `test/kontrast.ps1` her renk çiftini ölçer; `test/pencere.ps1` çalışan paneli yakalar; `test/hc-coz.ps1` ve `test/bt-pil.ps1` HeadsetControl ve Bluetooth okuyucularını dener.
 
 ## Üçüncü Taraf Yazılım
 

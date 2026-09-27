@@ -1,0 +1,40 @@
+Görsel Bakış — bağımsız alt ajan (sonnet), yalnız görüntüler — 2026-09-27
+
+Gönderilen istem özeti: docs/ui-denetim/2026-09-27/uc/ içindeki tüm .png dosyalarını aç; kesilme, hizasızlık, ölçekler arası tutarsızlık, kontrast, bulanıklık, önizleme ile gerçek pencere farkı; menüde "Teknesyum" ve "Destek Ol" var mı.
+
+--- Ham yanıt ---
+Dosya — durum:
+
+simge-100-uc.png — tamam (rakamlar 100/94/75/50/25/12/0 kademeli renklerle net; "88" ve "-" beyaz kalmış, diğerleri gibi eşik rengiyle boyanmamış — kasıtlı mı emin değilim, kontrol edilmeli)
+program-simgesi.png — tamam (16/24/32/48/256 boyutları biçim olarak tutarlı, kırpılma yok)
+yanyana-onizleme-uygulama.png — sorun: soldaki (önizleme) Şeffaf/%50 durumunda, sağdaki (gerçek pencere) ANC/%91 durumunda — iki taraf aynı veriyi göstermiyor, birebir kıyas yapılamıyor; ayrıca sağ panel "Şeffaflık" satırı olmadığı için daha kısa kalıyor ve panelin altında sağ tarafta boş beyaz bir alan görünüyor (panel yükseklikleri hizasız)
+panel-gercek-100-uc.png — tamam (ANC/%91 durumu net, hizalı)
+panel-dolu-100/125/150-uc.png — tamam (üç ölçekte de hizalı, kesilme yok)
+panel-dusuk-100/125/150-uc.png — tamam (kırmızı "Pil · düşük" rengi okunaklı, üç ölçekte tutarlı)
+panel-sarj-100/125/150-uc.png — tamam
+panel-odak-100/125/150-uc.png — tamam ("Kulaklık sesi" satırındaki odak çerçevesi üç ölçekte de net)
+panel-uzerinde-100/125/150-uc.png — tamam
+panel-kapali-100/125/150-uc.png — tamam ("Kulaklık kapalı" mesajı ve "Yeniden dene" düğmesi üç ölçekte hizalı, üç ANC seçeneği de pasif görünüyor — beklenen)
+panel-yok-100/125/150-uc.png — tamam
+panel-yok-dugme-100/125/150-uc.png — tamam ("Yeniden ara" düğmesinin odak çerçevesi net)
+panel-kisitli-100/125/150-uc.png — tamam
+panel-okunuyor-100/125/150-uc.png — tamam ("Pil okunuyor..." metni üç ölçekte de okunaklı)
+menu-100-uc.png — sorun: "Arctis pil: %650" yazıyor — fazladan bir "6" karakteri var (bozuk metin), sadece %100 ölçekte
+menu-125-uc.png — tamam ("Arctis pil: %50" doğru)
+menu-150-uc.png — tamam ("Arctis pil: %50" doğru)
+
+Menüde "Teknesyum" öğesi üç ölçekte de var (mavi renkli). "Destek Ol" adında birebir bir öğe yok; onun yerine "Destekle" yazıyor — isim farkı olabilir, kontrol edilmeli.
+
+Özet: 3 sorun
+
+1. menu-100-uc.png: "%650" — metin bozulması, sadece %100 ölçekte (öncelik: yüksek, kullanıcı gerçek pil yüzdesini yanlış okuyabilir)
+2. yanyana-onizleme-uygulama.png: önizleme ve gerçek pencere farklı durumlarda gösterilmiş, panel yükseklikleri hizasız, altta boş beyaz alan (öncelik: orta — karşılaştırma amacını bozuyor)
+3. Menüde "Destek Ol" yerine "Destekle" yazması (öncelik: düşük — isimlendirme farkı, teyit gerekli)
+
+Ayrıca not: simge-100-uc.png'de "88" ve "-" rakamlarının diğerleri gibi eşik rengiyle boyanmaması kasıtlı mı yoksa eksik mi belli değil, doğrulanmalı.
+
+--- Ana Oturumun Yanıtı ---
+1. "%650": görüntü açılıp bakıldı, metin "Arctis pil: %50"; yanlış okuma. Bulgu değil.
+2. Haklı. Önizlemeye gerçek pencerenin değerleriyle 'gercek' durumu eklendi (pil 91, kulaklık 75, Windows 60, ANC, mikrofon 10); yan yana görüntü yeniden üretildi, iki taraf aynı.
+3. Haklı. Önizleme menüsü elle yazılmış eski metni kullanıyordu; artık sürümü ve marka/destek yazısını uygulamanın Etiket sınıfından okuyor ("Destek Ol", v0.4.4).
+Not: "88" şarjda beyaz, "–" bağlantısız beyaz: kasıtlı (sahibin kuralı).

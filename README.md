@@ -19,6 +19,24 @@ HeadsetBatteryTray is a single Windows tray program. The tray icon shows the hea
 
 It reads the battery three ways, in order: direct HID for the SteelSeries Arctis Nova Pro Wireless, the bundled [HeadsetControl](https://github.com/Sapd/HeadsetControl) for about 40 wired and dongle headsets (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze and more), and the Windows Bluetooth battery value for Bluetooth headsets. No vendor suite needs to run.
 
+## Isn't This What HeadsetControl Already Does?
+
+HeadsetControl reads the battery and changes settings from the command line, and it does that well. This program uses it for most headsets. What it adds:
+
+- A tray number that stays on screen, instead of a command you run.
+- Direct HID for the Nova Pro, so volume, noise cancelling and microphone update live without polling a process.
+- Volume transfer between the headset and Windows, which no command offers.
+- A 1% battery estimate between the device's 12.5% steps.
+
+## Features
+
+- **Battery in the tray.** A 16 px pixel digit set, colored from green through blue to red, white while charging.
+- **Nova Pro panel.** Battery, headset volume, Windows volume, noise cancelling, transparency and microphone in one window.
+- **Volume transfer.** The headset stays between 20% and 80%; the rest moves to Windows.
+- **1% estimate.** Learned from your own discharges, never past the next device step.
+- **Three sources.** Direct HID, bundled HeadsetControl, Windows Bluetooth battery.
+- **Keyboard and scale.** Every control works from the keyboard; the panel follows the display scale and the animation setting.
+
 ## Arctis Nova Pro Wireless Panel
 
 The Nova Pro gets the full panel: battery, headset volume, Windows volume, noise cancelling, transparency (only in transparency mode) and microphone level.
@@ -69,7 +87,7 @@ Without a Nova, it checks once a minute: `headsetcontrol -b -o json` first, then
 powershell -ExecutionPolicy Bypass -File build.ps1
 ```
 
-`src/HeadsetBatteryTray.cs` is the whole program. `build.ps1` embeds `vendor/headsetcontrol.exe` when present. `test/komut-dene.ps1 -Komut 06-B0` sends one raw report; `test/onizleme.ps1` renders the icon, menu and every panel state at 100/125/150% to PNG; `test/panel-test.ps1` checks layout, keyboard and mouse headlessly; `test/kontrast.ps1` measures every color pair; `test/pencere.ps1` captures the running panel; `test/hc-coz.ps1` and `test/bt-pil.ps1` check the HeadsetControl and Bluetooth readers.
+`src/HeadsetBatteryTray.cs` is the whole program. `build.ps1` embeds `vendor/headsetcontrol.exe` when present, generates the theme from `teknesyum-ui/` and draws the exe icon with `simge.ps1`. `test/komut-dene.ps1 -Komut 06-B0` sends one raw report; `test/onizleme.ps1` renders the icon, menu and every panel state at 100/125/150% to PNG; `test/panel-test.ps1` checks layout, keyboard and mouse headlessly; `test/kontrast.ps1` measures every color pair; `test/pencere.ps1` captures the running panel; `test/hc-coz.ps1` and `test/bt-pil.ps1` check the HeadsetControl and Bluetooth readers.
 
 ## Third-Party Software
 

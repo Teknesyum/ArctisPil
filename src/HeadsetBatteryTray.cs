@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Teknesyum.Theme;
+using System;
 using System.IO;
 using System.Linq;
 using System.Drawing;
@@ -12,7 +13,7 @@ using Microsoft.Win32.SafeHandles;
 
 [assembly: System.Reflection.AssemblyTitle(Uygulama.Ad)]
 [assembly: System.Reflection.AssemblyProduct(Uygulama.Ad)]
-[assembly: System.Reflection.AssemblyCompany("Teknesyum")]
+[assembly: System.Reflection.AssemblyCompany(Teknesyum.Theme.Palette.Author)]
 [assembly: System.Reflection.AssemblyVersion(Uygulama.Surum + ".0")]
 [assembly: System.Reflection.AssemblyFileVersion(Uygulama.Surum + ".0")]
 [assembly: System.Reflection.AssemblyInformationalVersion(Uygulama.Surum)]
@@ -520,7 +521,7 @@ class PilTahmin
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.3";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.4";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
@@ -566,8 +567,8 @@ class Uygulama : ApplicationContext
         m.Items.Add(baslangicMenu);
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Bize ulaşın", null, (s, e) => Git(Depo + "/issues/new/choose")));
-        m.Items.Add(new ToolStripMenuItem("Teknesyum", null, (s, e) => Git(Depo)) { ForeColor = Tema.Renk1 });
-        m.Items.Add(new ToolStripMenuItem("Destekle", null, (s, e) => Git("https://github.com/sponsors/Teknesyum")));
+        m.Items.Add(new ToolStripMenuItem(Etiket.Al("sig.brand"), null, (s, e) => Git(Palette.GitHubUrl)) { ForeColor = Tema.Renk1, ToolTipText = Etiket.Al("sig.brandTitle") });
+        if (Palette.SponsorActive) m.Items.Add(new ToolStripMenuItem(Etiket.Al("sig.support"), null, (s, e) => Git(Palette.SponsorUrl)) { ToolTipText = Etiket.Al("sig.supportTitle") });
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Çıkış", null, (s, e) => Kapat()));
         m.Opening += (s, e) => baslangicMenu.Checked = BaslangicVar();
@@ -1026,36 +1027,58 @@ class Uygulama : ApplicationContext
     }
 }
 
+static class Etiket
+{
+    static Dictionary<string, object> sozluk;
+
+    public static string Al(string anahtar)
+    {
+        if (sozluk == null)
+        {
+            sozluk = new Dictionary<string, object>();
+            try
+            {
+                using (Stream k = typeof(Etiket).Assembly.GetManifestResourceStream("labels.tr.json"))
+                using (StreamReader r = new StreamReader(k, System.Text.Encoding.UTF8))
+                    sozluk = new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string, object>>(r.ReadToEnd());
+            }
+            catch { }
+        }
+        object v;
+        return sozluk.TryGetValue(anahtar, out v) && v is string ? (string)v : anahtar;
+    }
+}
+
 static class Tema
 {
-    public static readonly Color Renk1 = ColorTranslator.FromHtml("#6FB7FF");
-    public static readonly Color Renk2 = ColorTranslator.FromHtml("#CBA7D2");
-    public static readonly Color Renk3 = ColorTranslator.FromHtml("#C3A3FF");
-    public static readonly Color Success = ColorTranslator.FromHtml("#66F09A");
-    public static readonly Color Renk2Text = ColorTranslator.FromHtml("#FA8CFF");
-    public static readonly Color Danger = Renk2;
-    public static readonly Color DangerText = Renk2Text;
-    public static readonly Color Warning = ColorTranslator.FromHtml("#FFD24D");
-    public static readonly Color Surface = ColorTranslator.FromHtml("#000000");
-    public static readonly Color TextBody = ColorTranslator.FromHtml("#FFFFFF");
-    public static readonly Color TextLabel = Renk1;
-    public static readonly Color FocusRing = Renk1;
-    public static readonly Color BorderDefault = Color.FromArgb(0x8C, Renk1);
-    public static readonly Color BorderDecorative = Color.FromArgb(0x33, Renk1);
-    public static readonly Color Renk1Yuzde20 = Color.FromArgb(0x33, Renk1);
-    public static readonly Color Renk1Yuzde30 = Color.FromArgb(0x4D, Renk1);
+    public static readonly Color Renk1 = Palette.Renk1;
+    public static readonly Color Renk2 = Palette.Renk2;
+    public static readonly Color Renk3 = Palette.Renk3;
+    public static readonly Color Success = Palette.Success;
+    public static readonly Color Renk2Text = Palette.Renk2Text;
+    public static readonly Color Danger = Palette.Danger;
+    public static readonly Color DangerText = Palette.DangerText;
+    public static readonly Color Warning = Palette.Warning;
+    public static readonly Color Surface = Palette.Surface;
+    public static readonly Color TextBody = Palette.TextBody;
+    public static readonly Color TextLabel = Palette.TextLabel;
+    public static readonly Color FocusRing = Palette.FocusRing;
+    public static readonly Color BorderDefault = Palette.BorderDefault;
+    public static readonly Color BorderDecorative = Palette.BorderDecorative;
+    public static readonly Color Renk1Yuzde20 = Ton.Renk1Yuzde20;
+    public static readonly Color Renk1Yuzde30 = Ton.Renk1Yuzde30;
 
-    public const int Radius = 3, WindowRadius = 3, BorderWidth = 1, FocusWidth = 2, FocusOffset = 2;
-    public const int FontSize1 = 14, FontSize2 = 16, FontSize3 = 20;
-    public const double LineHeightHeading = 1.25;
-    public const int Space1 = 4, Space2 = 8, Space3 = 12;
-    public const int PanelPadding = 24, SectionGap = 24, RowGap = 12, FieldGap = 8;
-    public const int TargetMin = 24, InputHeight = 40, EntryOffset = 8, FrameBudgetMs = 16;
-    public const float ScaleHover = 1.02f, ScalePress = 0.98f;
-    public const int Fast = 80, Base = 150, Slow = 240;
-    public static readonly double[] Cik = { 0.2, 0, 0, 1 };
-    public static readonly double[] Gir = { 0.4, 0, 1, 1 };
-    public static readonly double[] GirCik = { 0.4, 0, 0.2, 1 };
+    public const int Radius = Palette.Radius, WindowRadius = Palette.WindowRadius, BorderWidth = Palette.BorderWidth, FocusWidth = Palette.FocusWidth, FocusOffset = Palette.FocusOffset;
+    public const int FontSize1 = Palette.FontSize1, FontSize2 = Palette.FontSize2, FontSize3 = Palette.FontSize3;
+    public const double LineHeightHeading = Palette.LineHeightHeading;
+    public const int Space1 = Palette.Space1, Space2 = Palette.Space2, Space3 = Palette.Space3;
+    public const int PanelPadding = Palette.PanelPadding, SectionGap = Palette.SectionGap, RowGap = Palette.RowGap, FieldGap = Palette.FieldGap;
+    public const int TargetMin = Palette.TargetMin, InputHeight = Palette.InputHeight, EntryOffset = Palette.EntryOffset, FrameBudgetMs = Palette.FrameBudgetMs;
+    public const float ScaleHover = (float)Palette.ScaleHover, ScalePress = (float)Palette.ScalePress;
+    public const int Fast = Sure.Fast, Base = Sure.Base, Slow = Sure.Slow;
+    public static readonly double[] Cik = Teknesyum.Theme.Egri.Out;
+    public static readonly double[] Gir = Teknesyum.Theme.Egri.In;
+    public static readonly double[] GirCik = Teknesyum.Theme.Egri.InOut;
 
     [DllImport("user32.dll")]
     static extern bool SystemParametersInfo(uint a, uint b, out bool c, uint d);
