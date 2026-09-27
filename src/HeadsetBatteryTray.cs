@@ -179,7 +179,7 @@ static class HeadsetControl
 
     static string Yol()
     {
-        string yan = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "headsetcontrol.exe");
+        string yan = Path.Combine(Path.GetDirectoryName(Golge.Kaynak), "headsetcontrol.exe");
         if (File.Exists(yan)) return yan;
         using (Stream k = typeof(HeadsetControl).Assembly.GetManifestResourceStream("headsetcontrol.exe"))
         {
@@ -521,12 +521,15 @@ class PilTahmin
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.5.0";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.5.1";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
     readonly NotifyIcon tepsi = new NotifyIcon();
     readonly System.Windows.Forms.Timer pilSaat = new System.Windows.Forms.Timer();
+    readonly System.Windows.Forms.Timer kaynakSaat = new System.Windows.Forms.Timer();
+    DateTime kaynakDamga, aday;
+    int kayip;
     readonly SynchronizationContext ui;
     readonly ToolStripMenuItem aktarmaMenu;
     readonly ToolStripMenuItem baslangicMenu;
@@ -548,8 +551,8 @@ class Uygulama : ApplicationContext
     public Uygulama()
     {
         ui = SynchronizationContext.Current ?? new WindowsFormsSynchronizationContext();
-        logYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), Ad + ".log");
-        durumYol = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "aktarma.txt");
+        logYol = Path.Combine(Path.GetDirectoryName(Golge.Kaynak), Ad + ".log");
+        durumYol = Path.Combine(Path.GetDirectoryName(Golge.Kaynak), "aktarma.txt");
         AcilistaGeriAl();
 
         ContextMenuStrip m = new ContextMenuStrip();
@@ -589,7 +592,14 @@ class Uygulama : ApplicationContext
         new Thread(() => { while (calisiyor) if (acSinyal.WaitOne(1000)) ui.Post(_ => panel.Ac(true), null); }) { IsBackground = true }.Start();
         tepsi.MouseClick += (s, e) => { if (e.Button == MouseButtons.Left) panel.Ac(); };
 
-        if (!BaslangicVar()) Baslangic(true);
+        if (!BaslangicVar() || !BaslangicGuncel()) Baslangic(true);
+        if (Golge.Aktif)
+        {
+            kaynakDamga = Golge.Damga();
+            kaynakSaat.Interval = 2000;
+            kaynakSaat.Tick += (s, e) => KaynakBak();
+            kaynakSaat.Start();
+        }
 
         pilSaat.Interval = 60000;
         pilSaat.Tick += (s, e) => { Sorgula(); DakikaKaydi(); };
@@ -970,12 +980,39 @@ class Uygulama : ApplicationContext
             return k != null && k.GetValue(RunAd) != null;
     }
 
+    static bool BaslangicGuncel()
+    {
+        using (RegistryKey k = Registry.CurrentUser.OpenSubKey(RunAnahtar))
+            return k != null && string.Equals(k.GetValue(RunAd) as string, "\"" + Golge.Kaynak + "\"", StringComparison.OrdinalIgnoreCase);
+    }
+
+    void KaynakBak()
+    {
+        DateTime d = Golge.Damga();
+        if (d == DateTime.MinValue)
+        {
+            if (++kayip < 10) return;
+            kaynakSaat.Stop();
+            Log("kaynak exe kaldırıldı, kalıntılar temizleniyor");
+            Kapat();
+            Golge.Temizle(RunAnahtar, new[] { RunAd, EskiRunAd }, AyarAnahtar);
+            return;
+        }
+        kayip = 0;
+        if (d == kaynakDamga) return;
+        if (d != aday) { aday = d; return; }
+        kaynakSaat.Stop();
+        Log("yeni sürüm bulundu, yeniden başlatılıyor");
+        Kapat();
+        Golge.Yeniden();
+    }
+
     static void Baslangic(bool ac)
     {
         using (RegistryKey k = Registry.CurrentUser.CreateSubKey(RunAnahtar))
         {
             if (k.GetValue(EskiRunAd) != null) k.DeleteValue(EskiRunAd);
-            if (ac) k.SetValue(RunAd, "\"" + Application.ExecutablePath + "\"");
+            if (ac) k.SetValue(RunAd, "\"" + Golge.Kaynak + "\"");
             else if (k.GetValue(RunAd) != null) k.DeleteValue(RunAd);
         }
     }
@@ -1009,8 +1046,13 @@ class Uygulama : ApplicationContext
     static extern bool AllowSetForegroundWindow(int p);
 
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
+        int bekle = Array.IndexOf(args, "--bekle");
+        if (bekle >= 0 && bekle + 1 < args.Length)
+            try { using (System.Diagnostics.Process p = System.Diagnostics.Process.GetProcessById(int.Parse(args[bekle + 1]))) p.WaitForExit(10000); } catch { }
+        int kaynak = Array.IndexOf(args, "--kaynak");
+        Golge.Kaynak = kaynak >= 0 && kaynak + 1 < args.Length ? args[kaynak + 1] : Application.ExecutablePath;
         bool yeni;
         using (Mutex mx = new Mutex(true, Uygulama.Ad + "-tek", out yeni))
         {
@@ -1019,11 +1061,62 @@ class Uygulama : ApplicationContext
                 try { AllowSetForegroundWindow(-1); using (EventWaitHandle h = EventWaitHandle.OpenExisting(Uygulama.Ad + "-ac")) h.Set(); } catch { }
                 return;
             }
+            if (kaynak < 0 && Golge.Baslat()) return;
             try { SetProcessDPIAware(); } catch { }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Uygulama());
         }
+    }
+}
+
+static class Golge
+{
+    public static string Kaynak = Application.ExecutablePath;
+    public static string Klasor { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Uygulama.Ad); } }
+    static string Yol { get { return Path.Combine(Path.Combine(Klasor, "calisan"), Uygulama.Ad + ".exe"); } }
+
+    public static bool Aktif { get { return !string.Equals(Path.GetFullPath(Kaynak), Path.GetFullPath(Application.ExecutablePath), StringComparison.OrdinalIgnoreCase); } }
+
+    public static DateTime Damga()
+    {
+        try { return File.Exists(Kaynak) ? File.GetLastWriteTimeUtc(Kaynak) : DateTime.MinValue; } catch { return DateTime.MinValue; }
+    }
+
+    public static bool Baslat()
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(Yol));
+            for (int i = 0; ; i++)
+                try { File.Copy(Application.ExecutablePath, Yol, true); break; }
+                catch (IOException) { if (i >= 40) throw; Thread.Sleep(250); }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Yol, "--kaynak \"" + Kaynak + "\" --bekle " + System.Diagnostics.Process.GetCurrentProcess().Id) { UseShellExecute = false });
+            return true;
+        }
+        catch { return false; }
+    }
+
+    public static void Yeniden()
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Kaynak, "--bekle " + System.Diagnostics.Process.GetCurrentProcess().Id) { UseShellExecute = false }); } catch { }
+    }
+
+    public static void Temizle(string run, string[] adlar, string ayar)
+    {
+        try
+        {
+            using (RegistryKey k = Registry.CurrentUser.OpenSubKey(run, true))
+                if (k != null)
+                    foreach (string a in adlar)
+                    {
+                        string v = k.GetValue(a) as string;
+                        if (v != null && v.IndexOf(Kaynak, StringComparison.OrdinalIgnoreCase) >= 0) k.DeleteValue(a);
+                    }
+        }
+        catch { }
+        try { Registry.CurrentUser.DeleteSubKeyTree(ayar, false); } catch { }
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 4 >nul & rd /s /q \"" + Klasor + "\"") { UseShellExecute = false, CreateNoWindow = true, WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden }); } catch { }
     }
 }
 

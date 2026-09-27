@@ -1,0 +1,9 @@
+{
+  "name": "HeadsetBatteryTray",
+  "category": "system",
+  "asset": "HeadsetBatteryTray.exe",
+  "method": "portable",
+  "run": "HeadsetBatteryTray.exe",
+  "icon": "assets/icon.png",
+  "screenshot": "assets/panel.png"
+}

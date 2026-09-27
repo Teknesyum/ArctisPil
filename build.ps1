@@ -23,7 +23,7 @@ $duzen = @('using System.Drawing;', 'namespace Teknesyum.Theme {', 'public stati
 [IO.File]::WriteAllLines((Join-Path $obj 'Duzen.cs'), $duzen, (New-Object Text.UTF8Encoding $true))
 $etiket = Join-Path $kok 'teknesyum-ui\winforms'
 Get-ChildItem $etiket -Filter 'labels.*.json' | ForEach-Object { $ek += "/resource:$($_.FullName),$($_.Name)" }
-& (Join-Path $kok 'simge.ps1') -Jeton (Join-Path $kok 'teknesyum-ui\theme.tokens.json') -Cikti (Join-Path $obj 'app.ico')
+& (Join-Path $kok 'simge.ps1') -Jeton (Join-Path $kok 'teknesyum-ui\theme.tokens.json') -Cikti (Join-Path $obj 'app.ico') -Png (Join-Path $kok 'assets\icon.png')
 $ek += "/win32icon:$(Join-Path $obj 'app.ico')"
 & $csc /nologo /optimize+ /target:winexe /codepage:65001 /out:"$cikti\HeadsetBatteryTray.exe" /noconfig /nostdlib /r:"$fw\mscorlib.dll" /r:"$fw\System.dll" /r:"$fw\System.Windows.Forms.dll" /r:"$fw\System.Drawing.dll" /r:"$fw\System.Core.dll" /r:"$fw\System.Web.Extensions.dll" @ek "$kok\src\HeadsetBatteryTray.cs" "$obj\Duzen.cs"
 if ($LASTEXITCODE -ne 0) { throw "derleme başarısız ($LASTEXITCODE)" }

@@ -61,6 +61,8 @@ The panel works from the keyboard: Tab or the arrow keys move between rows, Left
 
 Download `HeadsetBatteryTray.exe` from the [latest release](../../releases/latest) and run it. It adds itself to startup; untick "Windows ile başlat" in the right-click menu to stop that. The version is shown at the top of the right-click menu and in the exe's file properties.
 
+It also installs from [Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base) (`teknesyum.json` in this repo). The program runs from a copy in `%LOCALAPPDATA%\HeadsetBatteryTray`, so the downloaded exe is never locked: when it is replaced it restarts on the new version, and when it is deleted it removes its startup entry, settings and data, then exits.
+
 ## How It Works
 
 The Nova base station exposes a vendor HID interface (interface 4). Commands go to the `0xFFC0` collection as 64-byte reports starting with `06`; events arrive on `0xFF00` starting with `07`.

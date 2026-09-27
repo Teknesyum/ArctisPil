@@ -61,6 +61,8 @@ Panel klavyeyle kullanılır: Tab ya da ok tuşları satırlar arasında gezer, 
 
 [Son sürümden](../../releases/latest) `HeadsetBatteryTray.exe` dosyasını indirip çalıştırın. Kendini başlangıca ekler; durdurmak için sağ tık menüsünde "Windows ile başlat" işaretini kaldırın. Sürüm, sağ tık menüsünün en üstünde ve exe'nin dosya özelliklerinde yazar.
 
+[Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base) üzerinden de kurulur (depodaki `teknesyum.json`). Program `%LOCALAPPDATA%\HeadsetBatteryTray` içindeki bir kopyadan çalışır, indirilen exe hiç kilitlenmez: exe değişince yeni sürümle yeniden başlar, silinince başlangıç kaydını, ayarlarını ve verisini kaldırıp kapanır.
+
 ## Nasıl Çalışır
 
 Nova baz istasyonu üreticiye özel bir HID arayüzü sunar (arayüz 4). Komutlar `0xFFC0` koleksiyonuna `06` ile başlayan 64 baytlık raporlar olarak gider; olaylar `0xFF00` üzerinden `07` ile başlayarak gelir.

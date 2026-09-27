@@ -1,4 +1,4 @@
-﻿param([string]$Jeton, [string]$Cikti)
+﻿param([string]$Jeton, [string]$Cikti, [string]$Png)
 Add-Type -AssemblyName System.Drawing
 $j = Get-Content -Raw -Encoding UTF8 $Jeton | ConvertFrom-Json
 $zemin = [Drawing.ColorTranslator]::FromHtml($j.brand.surface.value)
@@ -52,3 +52,4 @@ for ($i = 0; $i -lt $boylar.Count; $i++) {
 }
 foreach ($p in $pngler) { $w.Write($p) }
 [IO.File]::WriteAllBytes($Cikti, $f.ToArray())
+if ($Png) { [IO.File]::WriteAllBytes($Png, $pngler[-1]) }

@@ -1,0 +1,12 @@
+1) Kurulum (Base portable: apps\HeadsetBatteryTray\HeadsetBatteryTray.exe)
+  pid 24848: "C:\Users\Administrator\AppData\Local\HeadsetBatteryTray\calisan\HeadsetBatteryTray.exe" --kaynak "C:\Users\Administrator\Desktop\Projeler\ArctisPil\tmp\basetest-004534\apps\HeadsetBatteryTray\HeadsetBatteryTray.exe" --bekle 37124
+  Run: "C:\Users\Administrator\Desktop\Projeler\ArctisPil\tmp\basetest-004534\apps\HeadsetBatteryTray\HeadsetBatteryTray.exe"
+2) Güncelleme (Base swap_into: klasör onceki'ye taşınır, yenisi konur)
+  klasör taşındı: kilit yok
+  pid 27500: "C:\Users\Administrator\AppData\Local\HeadsetBatteryTray\calisan\HeadsetBatteryTray.exe" --kaynak "C:\Users\Administrator\Desktop\Projeler\ArctisPil\tmp\basetest-004534\apps\HeadsetBatteryTray\HeadsetBatteryTray.exe" --bekle 41500
+3) Kaldırma (Base: klasör silinir)
+  klasör kaldırıldı: kilit yok
+  çalışan süreç: 0
+  Run değeri: 
+  HKCU\Software\HeadsetBatteryTray: False
+  %LOCALAPPDATA%\HeadsetBatteryTray: False
