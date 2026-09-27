@@ -1,4 +1,4 @@
-﻿Kontrast Ölçümü — 2026-09-27 06:36 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
+﻿Kontrast Ölçümü — 2026-09-27 06:42 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
 
 Ekran         Oge                           Hal                                   On      Zemin    Oran Esik Sonuc
 -----         ---                           ---                                   --      -----    ---- ---- -----

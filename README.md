@@ -73,7 +73,7 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 
 ## Third-Party Software
 
-Release builds bundle [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 by Denis Arnst and contributors, unmodified, licensed GPL-3.0. It is run as a separate program; its source is at the link above. The panel font is [Atkinson Hyperlegible Next](https://github.com/googlefonts/atkinson-hyperlegible-next), SIL Open Font License 1.1, embedded in the program. See [docs/licenses.md](docs/licenses.md).
+Release builds bundle [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 by Denis Arnst and contributors, unmodified, licensed GPL-3.0. It is run as a separate program; its source is at the link above. See [docs/licenses.md](docs/licenses.md).
 
 ## Contributing
 

@@ -14,5 +14,5 @@ geçti  şarjda cihaz değeri gösterilir (75)
 geçti  şarj bitip 8'e dönünce temiz başlangıç, %100
 geçti  iki kademe birden düşüş öğrenilmez (kesik)
 geçti  3 saatten uzun boşluk bandı kesik yapar
-gerçek kayıt oynatıldı: kademe 8, tahmin %93, aralık %87-100, aktif 85 dk, boş 5 dk, kesik False, öğrenilen bant 0
+gerçek kayıt oynatıldı: kademe 8, tahmin %93, aralık %87-100, aktif 90 dk, boş 5 dk, kesik False, öğrenilen bant 0
 hata: 0

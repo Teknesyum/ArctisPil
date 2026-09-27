@@ -73,7 +73,7 @@ Programın tamamı `src/HeadsetBatteryTray.cs`. `build.ps1`, `vendor/headsetcont
 
 ## Üçüncü Taraf Yazılım
 
-Sürüm dosyaları, Denis Arnst ve katkıcılarının [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 sürümünü değiştirilmeden içerir, lisansı GPL-3.0'dır. Ayrı bir program olarak çalıştırılır; kaynağı yukarıdaki bağlantıdadır. Panel yazı tipi [Atkinson Hyperlegible Next](https://github.com/googlefonts/atkinson-hyperlegible-next), SIL Open Font License 1.1, programa gömülüdür. Bkz. [docs/licenses.md](docs/licenses.md).
+Sürüm dosyaları, Denis Arnst ve katkıcılarının [HeadsetControl](https://github.com/Sapd/HeadsetControl) 4.1.0 sürümünü değiştirilmeden içerir, lisansı GPL-3.0'dır. Ayrı bir program olarak çalıştırılır; kaynağı yukarıdaki bağlantıdadır. Bkz. [docs/licenses.md](docs/licenses.md).
 
 ## Katkı
 

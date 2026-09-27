@@ -1059,8 +1059,6 @@ static class Tema
 
     [DllImport("user32.dll")]
     static extern bool SystemParametersInfo(uint a, uint b, out bool c, uint d);
-    [DllImport("gdi32.dll")]
-    static extern IntPtr AddFontMemResourceEx(IntPtr pb, uint cb, IntPtr pdv, out uint n);
 
     public static bool Hareket = HareketAcik();
 
@@ -1082,53 +1080,14 @@ static class Tema
         }
     }
 
-    static PrivateFontCollection pfc;
-    static readonly List<IntPtr> bellek = new List<IntPtr>();
-    static FontFamily sans, sansYari;
-    static string mono;
-
-    static void Yukle()
-    {
-        if (pfc != null) return;
-        pfc = new PrivateFontCollection();
-        System.Reflection.Assembly a = typeof(Tema).Assembly;
-        foreach (string ad in a.GetManifestResourceNames())
-        {
-            if (!ad.EndsWith(".ttf", StringComparison.OrdinalIgnoreCase)) continue;
-            try
-            {
-                byte[] v;
-                using (Stream s = a.GetManifestResourceStream(ad))
-                using (MemoryStream m = new MemoryStream()) { s.CopyTo(m); v = m.ToArray(); }
-                IntPtr p = Marshal.AllocCoTaskMem(v.Length);
-                Marshal.Copy(v, 0, p, v.Length);
-                pfc.AddMemoryFont(p, v.Length);
-                uint n;
-                AddFontMemResourceEx(p, (uint)v.Length, IntPtr.Zero, out n);
-                bellek.Add(p);
-            }
-            catch { }
-        }
-        foreach (FontFamily f in pfc.Families)
-        {
-            if (f.Name == "Atkinson Hyperlegible Next") sans = f;
-            else if (f.Name.StartsWith("Atkinson Hyperlegible Next ")) sansYari = f;
-        }
-        if (sans == null) sans = new FontFamily("Segoe UI");
-        using (InstalledFontCollection y = new InstalledFontCollection())
-            mono = y.Families.Any(f => f.Name == "Cascadia Mono") ? "Cascadia Mono" : "Consolas";
-    }
-
     public static Font Sans(float px, bool yari)
     {
-        Yukle();
-        if (yari && sansYari != null) return new Font(sansYari, px, FontStyle.Regular, GraphicsUnit.Pixel);
-        return new Font(sans, px, yari ? FontStyle.Bold : FontStyle.Regular, GraphicsUnit.Pixel);
+        return yari ? new Font("Segoe UI Semibold", px, FontStyle.Regular, GraphicsUnit.Pixel) : new Font("Segoe UI", px, FontStyle.Regular, GraphicsUnit.Pixel);
     }
 
-    public static Font Mono(float px) { Yukle(); return new Font(mono, px, FontStyle.Bold, GraphicsUnit.Pixel); }
+    public static Font Mono(float px) { return new Font("Segoe UI Semibold", px, FontStyle.Regular, GraphicsUnit.Pixel); }
 
-    public static string Aileler() { Yukle(); return (sans != null ? sans.Name : "-") + " | " + (sansYari != null ? sansYari.Name : "-") + " | " + mono; }
+    public static string Aileler() { using (Font a = Sans(12, false)) using (Font b = Sans(12, true)) using (Font c = Mono(12)) return a.Name + " | " + b.Name + " | " + c.Name; }
 
     public static Color PilYazi(int yuzde, bool sarj) { return sarj ? Renk1 : PilRenk(yuzde); }
     public static Color PilDolgu(int yuzde, bool sarj) { return sarj ? Renk1 : PilRenk(yuzde); }
@@ -1645,7 +1604,7 @@ class SesPaneli : Form
         Esitle();
         Graphics g = e.Graphics;
         g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-        g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+        g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
         g.Clear(Tema.Surface);
         int k = D(Tema.PanelPadding), gen = ClientSize.Width;
         Cerceve(g, new RectangleF(0, 0, gen, ClientSize.Height), Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.WindowRadius));
