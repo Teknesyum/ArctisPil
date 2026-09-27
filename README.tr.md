@@ -24,6 +24,7 @@ Pili sırayla üç yoldan okur: SteelSeries Arctis Nova Pro Wireless için doğr
 Nova Pro tam paneli alır: pil, kulaklık sesi, Windows sesi, gürültü engelleme, şeffaflık (yalnız şeffaf modda) ve mikrofon seviyesi.
 
 - **Ses aktarımı (20-80).** Kulaklık %20 ile %80 arasında kalır. Tekerlek %80'i geçince fazlası Windows'a gider; %20'nin altında fark Windows'tan düşer. Geri dönüşte önce Windows %50'ye doğru hareket eder, sonra kulaklık izler.
+- **%1 hassasiyetle pil.** Nova pili %12,5 adımlarla bildirir. Tepsi bu adımların arasını %1 adımlarla sayar; hızı, önceki boşalmalarda her yüzdenin ne kadar sürdüğünden gelir. Kullandıkça öğrenir: ayrı bir ölçüm gerekmez, sessiz geçen zaman dinlemekten az sayılır. Bir sonraki cihaz adımını asla geçmez: 25 ile 12 arasında 13'te bekler. İpucu cihaz aralığını ve kalan süreyi gösterir. Menüdeki "Pil tahmini (%1 adım)" ile kapatılır.
 - **Yuvarlak sayılar.** İki ses çubuğu da %5 adımlara oturur.
 - **Cihaza kaydedilir.** Değişiklikler son dokunuştan 0,8 sn sonra baz istasyonuna yazılır, kapatıp açınca kaybolmaz.
 

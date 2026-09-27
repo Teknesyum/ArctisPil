@@ -339,9 +339,188 @@ static class PilKaydi
     }
 }
 
+class PilTahmin
+{
+    public const int Seviye = 8;
+    const double Ogrenme = 0.3, VarsayilanM = 12;
+    static readonly System.Globalization.CultureInfo Kultur = System.Globalization.CultureInfo.InvariantCulture;
+
+    readonly string yol;
+    public double M = VarsayilanM, W = 1, Oran = 0.5;
+    public readonly double[] D = new double[100];
+    public readonly bool[] Ogrenildi = new bool[100];
+    public int Bantlar;
+    public int Kademe = -1;
+    public string Hal = "";
+    public bool Kesik = true;
+    public double Aktif, Bos;
+    DateTime son = DateTime.MinValue;
+    readonly List<double[]> gecmis = new List<double[]>();
+
+    public PilTahmin(string yol)
+    {
+        this.yol = yol;
+        for (int i = 0; i < 100; i++) D[i] = M;
+        Yukle();
+    }
+
+    public static int Ust(int k) { return Math.Max(0, k) * 100 / Seviye; }
+
+    public int Yuzde
+    {
+        get
+        {
+            if (Kademe < 0) return -1;
+            if (Hal == "sarj" || Kademe == 0) return Ust(Kademe);
+            int e = Ust(Kademe), alt = Ust(Kademe - 1) + 1;
+            double u = Aktif + W * Bos;
+            while (e > alt && u >= D[e - 1]) { u -= D[e - 1]; e--; }
+            return e;
+        }
+    }
+
+    public string Aralik { get { return Kademe <= 0 ? "%0" : "%" + Ust(Kademe - 1) + "-" + Ust(Kademe); } }
+
+    public double KalanDakika
+    {
+        get
+        {
+            if (Bantlar == 0 || Kademe <= 0 || Hal != "acik") return -1;
+            double kalan = -(Aktif + W * Bos), taban = 0;
+            for (int i = 0; i < Ust(Kademe); i++) kalan += D[i];
+            for (int i = 0; i < Ust(Kademe - 1); i++) taban += D[i];
+            double ta = gecmis.Sum(g => g[0]), tb = gecmis.Sum(g => g[1]);
+            double o = ta + tb > 60 ? ta / (ta + tb) : Oran;
+            return Math.Max(kalan, taban) / (o + W * (1 - o));
+        }
+    }
+
+    public void Olay(DateTime t, int k, string h)
+    {
+        if (k < 0 || h == "yok") { if (Hal == "acik") Hal = "yok"; return; }
+        if (h == "kapali") { if (Hal != "sarj") Hal = h; return; }
+        if (h == "sarj") { Hal = h; Kademe = k; Kesik = true; Aktif = Bos = 0; return; }
+        bool sarjdan = Hal == "sarj";
+        Hal = h;
+        if (k == Kademe && !sarjdan) return;
+        if (Kademe < 0 || sarjdan || k > Kademe) { Capa(k, k != Seviye); return; }
+        if (k == Kademe - 1 && !Kesik) Ogren();
+        Capa(k, k != Kademe - 1);
+    }
+
+    void Capa(int k, bool kesik)
+    {
+        Kademe = k; Aktif = Bos = 0; Kesik = kesik;
+    }
+
+    public void Dakika(DateTime t, double sesli)
+    {
+        if (son == DateTime.MinValue || t <= son) { son = t; return; }
+        double dt = (t - son).TotalMinutes;
+        son = t;
+        if (Hal != "acik" || Kademe <= 0) return;
+        if (dt > 180) { Kesik = true; return; }
+        if (dt > 2) { Bos += dt - 1; dt = 1; }
+        double s = Math.Max(0, Math.Min(1, sesli));
+        Aktif += dt * s;
+        Bos += dt * (1 - s);
+        Oran += 0.05 * (s - Oran);
+    }
+
+    void Ogren()
+    {
+        int ust = Ust(Kademe), alt = Ust(Kademe - 1), n = ust - alt;
+        gecmis.Add(new[] { Aktif, Bos, n });
+        if (gecmis.Count > 12) gecmis.RemoveAt(0);
+        WOgren();
+        double u = Aktif + W * Bos;
+        if (u < 1) return;
+        double bek = 0;
+        for (int i = alt; i < ust; i++) bek += D[i];
+        double f = 1 + Ogrenme * (u / bek - 1);
+        for (int i = alt; i < ust; i++) { D[i] *= f; Ogrenildi[i] = true; }
+        M += Ogrenme * (u / n - M);
+        for (int i = 0; i < 100; i++) if (!Ogrenildi[i]) D[i] = M;
+        Bantlar++;
+    }
+
+    void WOgren()
+    {
+        if (gecmis.Count < 3) return;
+        double aa = 0, ai = 0, ii = 0, an = 0, iN = 0;
+        foreach (double[] g in gecmis) { aa += g[0] * g[0]; ai += g[0] * g[1]; ii += g[1] * g[1]; an += g[0] * g[2]; iN += g[1] * g[2]; }
+        double det = aa * ii - ai * ai;
+        if (det <= 0.01 * aa * ii) return;
+        double a = (an * ii - iN * ai) / det, b = (aa * iN - ai * an) / det;
+        if (a > 0 && b > 0) W = Math.Max(0.1, Math.Min(2, b / a));
+    }
+
+    public void Oynat(string csv)
+    {
+        foreach (string satir in File.ReadAllLines(csv).Skip(1))
+        {
+            string[] a = satir.Split(',');
+            if (a.Length < 5) continue;
+            DateTime t;
+            if (!DateTime.TryParseExact(a[0], "yyyy-MM-ddTHH:mm:ss", Kultur, System.Globalization.DateTimeStyles.None, out t)) continue;
+            int ham, sesli;
+            int.TryParse(a[2], out ham); int.TryParse(a[4], out sesli);
+            Olay(t, ham, a[3]);
+            if (a[1] == "d") Dakika(t, sesli / 60.0);
+        }
+    }
+
+    string Sayi(double v) { return v.ToString("0.####", Kultur); }
+
+    public void Kaydet()
+    {
+        try
+        {
+            List<string> l = new List<string> {
+                "m=" + Sayi(M), "w=" + Sayi(W), "oran=" + Sayi(Oran), "bantlar=" + Bantlar,
+                "kademe=" + Kademe, "hal=" + Hal, "kesik=" + (Kesik ? 1 : 0), "aktif=" + Sayi(Aktif), "bos=" + Sayi(Bos),
+                "son=" + (son == DateTime.MinValue ? "" : son.ToString("yyyy-MM-ddTHH:mm:ss", Kultur)),
+                "d=" + string.Join(";", D.Select(Sayi)),
+                "ogrenildi=" + string.Concat(Ogrenildi.Select(b => b ? "1" : "0")),
+                "gecmis=" + string.Join(";", gecmis.Select(g => string.Join(":", g.Select(Sayi)))) };
+            Directory.CreateDirectory(Path.GetDirectoryName(yol));
+            File.WriteAllLines(yol, l);
+        }
+        catch { }
+    }
+
+    void Yukle()
+    {
+        if (!File.Exists(yol)) return;
+        try
+        {
+            Dictionary<string, string> v = new Dictionary<string, string>();
+            foreach (string s in File.ReadAllLines(yol)) { int i = s.IndexOf('='); if (i > 0) v[s.Substring(0, i)] = s.Substring(i + 1); }
+            Func<string, double> sayi = k => double.Parse(v[k], Kultur);
+            M = sayi("m"); W = sayi("w"); Oran = sayi("oran"); Bantlar = int.Parse(v["bantlar"]);
+            Kademe = int.Parse(v["kademe"]); Hal = v["hal"]; Kesik = v["kesik"] == "1"; Aktif = sayi("aktif"); Bos = sayi("bos");
+            if (v["son"] != "") son = DateTime.ParseExact(v["son"], "yyyy-MM-ddTHH:mm:ss", Kultur);
+            string[] d = v["d"].Split(';');
+            for (int i = 0; i < 100 && i < d.Length; i++) { D[i] = double.Parse(d[i], Kultur); Ogrenildi[i] = v["ogrenildi"][i] == '1'; }
+            foreach (string g in v["gecmis"].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                gecmis.Add(g.Split(':').Select(x => double.Parse(x, Kultur)).ToArray());
+        }
+        catch { }
+    }
+
+    public static PilTahmin Ac(string anahtar)
+    {
+        string csv = PilKaydi.Yol(anahtar), txt = Path.ChangeExtension(csv, ".txt");
+        bool yeni = !File.Exists(txt);
+        PilTahmin p = new PilTahmin(txt);
+        if (yeni && File.Exists(csv)) { try { p.Oynat(csv); } catch { } p.Kaydet(); }
+        return p;
+    }
+}
+
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.3.2";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.0";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
@@ -351,6 +530,8 @@ class Uygulama : ApplicationContext
     readonly ToolStripMenuItem aktarmaMenu;
     readonly ToolStripMenuItem baslangicMenu;
     readonly ToolStripMenuItem durumMenu;
+    readonly ToolStripMenuItem tahminMenu;
+    readonly PilTahmin tahmin = PilTahmin.Ac(NovaAnahtar);
     readonly string logYol;
     readonly string durumYol;
 
@@ -374,12 +555,14 @@ class Uygulama : ApplicationContext
         MenuTemasi.Uygula(m);
         durumMenu = new ToolStripMenuItem("Bağlanıyor…") { Enabled = false };
         aktarmaMenu = new ToolStripMenuItem("Ses aktarma (20-80)", null, (s, e) => aktarmaMenu.Checked = !aktarmaMenu.Checked) { Checked = true };
+        tahminMenu = new ToolStripMenuItem("Pil tahmini (%1 adım)", null, (s, e) => { tahminMenu.Checked = !tahminMenu.Checked; TahminKaydet(tahminMenu.Checked); if (seviye >= 0 && durum != 0x01) PilGoster2(); }) { Checked = TahminAcik() };
         baslangicMenu = new ToolStripMenuItem("Windows ile başlat", null, (s, e) => Baslangic(!baslangicMenu.Checked));
         m.Items.Add(new ToolStripMenuItem(Ad + " v" + Surum) { Enabled = false });
         m.Items.Add(durumMenu);
         m.Items.Add(new ToolStripMenuItem("Pili şimdi yenile", null, (s, e) => Sorgula()));
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(aktarmaMenu);
+        m.Items.Add(tahminMenu);
         m.Items.Add(baslangicMenu);
         m.Items.Add(new ToolStripSeparator());
         m.Items.Add(new ToolStripMenuItem("Bize ulaşın", null, (s, e) => Git(Depo + "/issues/new/choose")));
@@ -425,6 +608,7 @@ class Uygulama : ApplicationContext
 
     void PilKaydet(string anahtar, int ham, string hal)
     {
+        if (anahtar == NovaAnahtar) tahmin.Olay(DateTime.Now, ham, hal);
         bool degisti = anahtar != kayitAnahtar || ham != kayitHam || hal != kayitHal;
         kayitAnahtar = anahtar; kayitHam = ham; kayitHal = hal;
         if (degisti) Kayit('s');
@@ -434,6 +618,12 @@ class Uygulama : ApplicationContext
     {
         Ses.OlcerYenile();
         if (kayitAnahtar != null) Kayit('d');
+        if (kayitAnahtar == NovaAnahtar)
+        {
+            tahmin.Dakika(DateTime.Now, Math.Min(sesliSaniye, 60) / 60.0);
+            tahmin.Kaydet();
+            if (seviye >= 0 && durum != 0x01 && !yedekte) PilGoster2();
+        }
         sesliSaniye = 0;
     }
 
@@ -562,7 +752,6 @@ class Uygulama : ApplicationContext
         if (sv != seviye || du != durum) Log(string.Format("pil: seviye {0}/8, durum 0x{1:X2}", sv, du));
         seviye = Math.Min(sv, 8); durum = du;
         PilKaydet(NovaAnahtar, seviye, du == 0x01 ? "kapali" : du == 0x02 ? "sarj" : "acik");
-        int yuzde = seviye * 100 / 8;
         if (du == 0x01)
         {
             Ciz("–", Tema.TextBody);
@@ -571,15 +760,44 @@ class Uygulama : ApplicationContext
             durumMenu.Text = "Kulaklık kapalı";
             return;
         }
-        PilGoster("Arctis", yuzde, du == 0x02);
+        PilGoster2();
     }
 
-    void PilGoster(string ad, int yuzde, bool sarj)
+    void PilGoster2()
+    {
+        bool sarj = durum == 0x02;
+        if (!tahminMenu.Checked || sarj || tahmin.Yuzde < 0) { PilGoster("Arctis", seviye * 100 / 8, sarj, null); return; }
+        double k = tahmin.KalanDakika;
+        string ek = " (cihaz " + tahmin.Aralik + ")" + (k >= 0 ? ", ~" + Sure(k) + " kaldı" : tahmin.Bantlar == 0 ? ", öğreniyor" : "");
+        PilGoster("Arctis", tahmin.Yuzde, false, ek);
+    }
+
+    static string Sure(double dk)
+    {
+        int d = (int)Math.Round(dk / 10) * 10;
+        return d >= 60 ? (d / 60 + " sa " + (d % 60 > 0 ? d % 60 + " dk" : "")).TrimEnd() : Math.Max(d, 10) + " dk";
+    }
+
+    const string AyarAnahtar = @"Software\" + Ad;
+
+    static bool TahminAcik()
+    {
+        try { using (RegistryKey k = Registry.CurrentUser.OpenSubKey(AyarAnahtar)) return k == null || !(k.GetValue("Tahmin") is int) || (int)k.GetValue("Tahmin") != 0; }
+        catch { return true; }
+    }
+
+    static void TahminKaydet(bool acik)
+    {
+        try { using (RegistryKey k = Registry.CurrentUser.CreateSubKey(AyarAnahtar)) k.SetValue("Tahmin", acik ? 1 : 0, RegistryValueKind.DWord); }
+        catch { }
+    }
+
+    void PilGoster(string ad, int yuzde, bool sarj, string ek = null)
     {
         string hal = sarj ? "şarjda" : "";
         Color c = sarj ? Tema.TextBody : Tema.PilYazi(yuzde, sarj);
         Ciz(yuzde.ToString(), c);
-        string metin = ad + " pil: %" + yuzde + (hal != "" ? " (" + hal + ")" : "");
+        string metin = ad + " pil: " + (ek != null ? "~" : "") + "%" + yuzde + (hal != "" ? " (" + hal + ")" : "") + (ek ?? "");
         tepsi.Text = metin.Length > 63 ? metin.Substring(0, 63) : metin;
         durumMenu.Text = metin;
         panel.PilAyarla(yuzde, hal);

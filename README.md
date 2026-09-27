@@ -24,6 +24,7 @@ It reads the battery three ways, in order: direct HID for the SteelSeries Arctis
 The Nova Pro gets the full panel: battery, headset volume, Windows volume, noise cancelling, transparency (only in transparency mode) and microphone level.
 
 - **Volume transfer (20-80).** The headset stays between 20% and 80%. Turn the dial past 80% and the extra points go to Windows; below 20% the difference comes off Windows. On the way back Windows moves first, toward 50%, then the headset follows.
+- **Battery to 1%.** The Nova reports battery in 12.5% steps. The tray counts down in 1% steps between them, paced by how long each percent lasted on your earlier discharges. It learns while you use the headset: no calibration run, and quiet time counts less than listening. It never goes past the next device step: between 25 and 12 it waits at 13. The tooltip shows the device range and the time left. Turn it off with "Battery estimate (1% steps)" in the menu.
 - **Round numbers.** Both volume bars snap to 5% steps.
 - **Saved to the device.** Changes are written to the base station 0.8 s after the last change, so they survive a power cycle.
 

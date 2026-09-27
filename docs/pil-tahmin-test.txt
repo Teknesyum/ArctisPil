@@ -1,0 +1,18 @@
+﻿Sentetik pil: aktif dakikada %1/15, boşta %1/40; 8 saat yoğun (%80 sesli), 8 saat hafif (%10 sesli). Cihaz 8 kademe (tavan).
+döngü 1: süre 2195 dk, ortalama sapma %0,85, en büyük %5,70, %75 anında kalan tahmin/gerçek 0,61, m 14,78, w 0,37, öğrenilen bant 8
+döngü 2: süre 2264 dk, ortalama sapma %0,29, en büyük %1,32, %75 anında kalan tahmin/gerçek 1,04, m 14,92, w 0,37, öğrenilen bant 16
+döngü 3: süre 2365 dk, ortalama sapma %0,29, en büyük %1,00, %75 anında kalan tahmin/gerçek 0,95, m 15,07, w 0,38, öğrenilen bant 24
+döngü 4: süre 2195 dk, ortalama sapma %0,27, en büyük %0,92, %75 anında kalan tahmin/gerçek 0,95, m 14,95, w 0,37, öğrenilen bant 32
+döngü 5: süre 2368 dk, ortalama sapma %0,26, en büyük %0,93, %75 anında kalan tahmin/gerçek 1,03, m 15,02, w 0,38, öğrenilen bant 40
+geçti  tahmin cihaz bandının dışına hiç çıkmadı (13'te bekler, 12'yi geçmez)
+geçti  5. döngü sapması 1. döngüden küçük (0,26 < 0,85)
+geçti  5. döngüde ortalama sapma %2'nin altında (0,26)
+geçti  boşta ağırlığı w gerçeğe yakın (gerçek 0,375; bulunan 0,38)
+geçti  kalan süre tahmini %20 içinde (oran 1,03)
+geçti  kaydet/yükle aynı tahmini verir (98 = 98)
+geçti  şarjda cihaz değeri gösterilir (75)
+geçti  şarj bitip 8'e dönünce temiz başlangıç, %100
+geçti  iki kademe birden düşüş öğrenilmez (kesik)
+geçti  3 saatten uzun boşluk bandı kesik yapar
+gerçek kayıt oynatıldı: kademe 8, tahmin %96, aralık %87-100, aktif 56 dk, boş 2 dk, kesik False, öğrenilen bant 0
+hata: 0

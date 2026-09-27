@@ -1,6 +1,6 @@
 # Plan: 1% Battery Estimator
 
-Status: plan only.
+Status: steps 1-3 done (v0.4.0). Remaining time uses the average active share of the learned bands, not the current minute, so it does not swing between listening and silence. Test: `test/tahmin-test.ps1` → `docs/pil-tahmin-test.txt`.
 
 ## Problem
 
@@ -54,7 +54,7 @@ Tray shows the estimated percent. Tooltip: `~57% (device 50-62%), ~11 h 20 min l
 ## Steps
 
 1. Log only: record level changes with time, mode and volume; no UI change. **Done in v0.3.1.**
-2. Estimator class with the cell table, fed from the log; test by replaying recorded cycles.
-3. Tray and tooltip use the estimate; toggle in the menu.
+2. Estimator class with the cell table, fed from the log; test by replaying recorded cycles. **Done in v0.4.0.**
+3. Tray and tooltip use the estimate; toggle in the menu. **Done in v0.4.0.**
 4. Charge curve and ANC multipliers.
 5. Generic band width for HeadsetControl and Bluetooth devices (inferred from the values seen).
