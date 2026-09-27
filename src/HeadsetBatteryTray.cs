@@ -520,7 +520,7 @@ class PilTahmin
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.0";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.1";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
@@ -857,31 +857,9 @@ class Uygulama : ApplicationContext
 
     void Ciz(string yazi, Color renk)
     {
-        using (Bitmap b = new Bitmap(32, 32))
+        int n = Math.Max(16, SystemInformation.SmallIconSize.Width);
+        using (Bitmap b = Rakam(yazi, renk, n))
         {
-            using (Graphics g = Graphics.FromImage(b))
-            using (System.Drawing.Drawing2D.GraphicsPath yol = new System.Drawing.Drawing2D.GraphicsPath())
-            using (SolidBrush br = new SolidBrush(renk))
-            {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                g.Clear(Color.Transparent);
-                FontFamily aile = FontFamily.Families.Any(f => f.Name == "Bahnschrift") ? new FontFamily("Bahnschrift") : new FontFamily("Segoe UI");
-                yol.AddString(yazi, aile, (int)FontStyle.Bold, 100f, new PointF(0, 0), StringFormat.GenericTypographic);
-                RectangleF k = yol.GetBounds();
-                float gen = yazi.Length >= 2 ? 32f : 22f;
-                float yuk = 30f;
-                float olc = Math.Min(gen / k.Width, yuk / k.Height);
-                float sx = yazi.Length >= 2 ? gen / k.Width : olc;
-                float sy = yazi.Length >= 2 ? yuk / k.Height : olc;
-                using (System.Drawing.Drawing2D.Matrix mt = new System.Drawing.Drawing2D.Matrix())
-                {
-                    mt.Translate((32f - k.Width * sx) / 2f, (32f - k.Height * sy) / 2f);
-                    mt.Scale(sx, sy);
-                    mt.Translate(-k.X, -k.Y);
-                    yol.Transform(mt);
-                }
-                g.FillPath(br, yol);
-            }
             IntPtr h = b.GetHicon();
             Icon yeni = (Icon)Icon.FromHandle(h).Clone();
             DestroyIcon(h);
@@ -890,6 +868,51 @@ class Uygulama : ApplicationContext
             simge = yeni;
         }
     }
+
+    static Bitmap Rakam(string yazi, Color renk, int n)
+    {
+        const int K = 8;
+        int N = n * K;
+        float[] kap = new float[n * n];
+        using (Bitmap b = new Bitmap(N, N, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+        {
+            using (Graphics g = Graphics.FromImage(b))
+            using (System.Drawing.Drawing2D.GraphicsPath yol = new System.Drawing.Drawing2D.GraphicsPath())
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                FontFamily aile = FontFamily.Families.Any(f => f.Name == "Bahnschrift") ? new FontFamily("Bahnschrift") : new FontFamily("Segoe UI");
+                yol.AddString(yazi, aile, (int)FontStyle.Bold, 100f, new PointF(0, 0), StringFormat.GenericTypographic);
+                RectangleF k = yol.GetBounds();
+                float sx = (yazi.Length >= 2 ? N : N * 0.7f) / k.Width, sy = N / k.Height;
+                if (yazi.Length < 2) sx = sy = Math.Min(sx, sy);
+                float ox = (float)Math.Round((N - k.Width * sx) / 2f / K) * K, oy = (float)Math.Round((N - k.Height * sy) / 2f / K) * K;
+                using (System.Drawing.Drawing2D.Matrix mt = new System.Drawing.Drawing2D.Matrix())
+                {
+                    mt.Translate(ox, oy);
+                    mt.Scale(sx, sy);
+                    mt.Translate(-k.X, -k.Y);
+                    yol.Transform(mt);
+                }
+                g.FillPath(Brushes.White, yol);
+            }
+            System.Drawing.Imaging.BitmapData d = b.LockBits(new Rectangle(0, 0, N, N), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            byte[] px = new byte[N * N * 4];
+            Marshal.Copy(d.Scan0, px, 0, px.Length);
+            b.UnlockBits(d);
+            for (int y = 0; y < N; y++)
+                for (int x = 0; x < N; x++)
+                    kap[(y / K) * n + x / K] += px[(y * N + x) * 4 + 3] / (255f * K * K);
+        }
+        Bitmap o = new Bitmap(n, n, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        for (int i = 0; i < kap.Length; i++)
+        {
+            float a = Math.Max(0f, Math.Min(1f, (kap[i] - 0.5f) * Sertlik + 0.5f));
+            o.SetPixel(i % n, i / n, Color.FromArgb((int)Math.Round(a * 255), renk));
+        }
+        return o;
+    }
+
+    const float Sertlik = 1.8f;
 
     static bool BaslangicVar()
     {
@@ -1058,8 +1081,26 @@ static class Tema
 
     public static string Aileler() { Yukle(); return (sans != null ? sans.Name : "-") + " | " + (sansYari != null ? sansYari.Name : "-") + " | " + mono; }
 
-    public static Color PilYazi(int yuzde, bool sarj) { return sarj ? Renk1 : yuzde >= 50 ? Success : yuzde >= 25 ? Warning : DangerText; }
-    public static Color PilDolgu(int yuzde, bool sarj) { return sarj ? Renk1 : yuzde >= 50 ? Success : yuzde >= 25 ? Renk1 : Danger; }
+    public static Color PilYazi(int yuzde, bool sarj) { return sarj ? Renk1 : PilRenk(yuzde); }
+    public static Color PilDolgu(int yuzde, bool sarj) { return sarj ? Renk1 : PilRenk(yuzde); }
+
+    public static readonly Color PilKirmizi = ColorTranslator.FromHtml("#FF9898");
+    public static readonly Color GorevCubugu = ColorTranslator.FromHtml("#202A31");
+
+    public static Color PilRenk(int yuzde)
+    {
+        double t = Math.Max(0, Math.Min(100, yuzde)) / 100.0, u = t >= 0.5 ? (t - 0.5) * 2 : t * 2;
+        Color a = t >= 0.5 ? Renk1 : PilKirmizi, b = t >= 0.5 ? Success : Renk1;
+        Func<int, int, int> k = (x, y) => (int)Math.Round(255 * Srgb(Dogrusal(x) + (Dogrusal(y) - Dogrusal(x)) * u));
+        Color c = Color.FromArgb(k(a.R, b.R), k(a.G, b.G), k(a.B, b.B));
+        for (int i = 0; i < 40 && Kontrast(c, GorevCubugu) < 7; i++) c = Karistir(c, Color.White, 0.02f);
+        return c;
+    }
+
+    static double Dogrusal(int v) { double s = v / 255.0; return s <= 0.04045 ? s / 12.92 : Math.Pow((s + 0.055) / 1.055, 2.4); }
+    static double Srgb(double v) { return v <= 0.0031308 ? v * 12.92 : 1.055 * Math.Pow(v, 1 / 2.4) - 0.055; }
+    static double Isik(Color c) { return 0.2126 * Dogrusal(c.R) + 0.7152 * Dogrusal(c.G) + 0.0722 * Dogrusal(c.B); }
+    public static double Kontrast(Color a, Color b) { double x = Isik(a), y = Isik(b); return (Math.Max(x, y) + 0.05) / (Math.Min(x, y) + 0.05); }
 
     public static double Egri(double[] e, double t)
     {

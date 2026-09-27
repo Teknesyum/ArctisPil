@@ -29,9 +29,7 @@ function Olc($ekran, $oge, $hal, $on, $zemin, $esik) {
 $metin = 7.0; $nesne = 3.0
 Olc 'panel' 'etiket' 'dinlenme' (T 'TextLabel') $yuzey $metin
 Olc 'panel' 'değer' 'dinlenme' (T 'TextBody') $yuzey $metin
-Olc 'panel' 'pil değeri ≥50' 'dinlenme' (T 'Success') $yuzey $metin
-Olc 'panel' 'pil değeri 25-49' 'dinlenme' (T 'Warning') $yuzey $metin
-Olc 'panel' 'pil değeri <25' 'dinlenme' (T 'DangerText') $yuzey $metin
+foreach ($y in 0, 25, 50, 75, 100) { Olc 'panel' "pil değeri %$y" 'dinlenme' ($tema.GetMethod('PilRenk').Invoke($null, [object[]]@([int]$y))) $yuzey $metin }
 Olc 'panel' 'pil değeri şarjda' 'dinlenme' (T 'Renk1') $yuzey $metin
 Olc 'panel' 'ipucu metni' 'boş/hata' (T 'TextBody') $yuzey $metin
 Olc 'panel' 'segment metni' 'dinlenme' (T 'TextBody') $r20 $metin
@@ -66,7 +64,11 @@ if ($gorev -gt 0) {
     $g.CopyFromScreen($ekran.Bounds.Left, $ekran.WorkingArea.Bottom + [int]($gorev / 2), 0, 0, $bmp.Size)
     $ornek = 0..($bmp.Width - 1) | ForEach-Object { $bmp.GetPixel($_, 0).ToArgb() } | Group-Object | Sort-Object Count -Descending | Select-Object -First 1
     $cubuk = [Drawing.Color]::FromArgb([int]$ornek.Name)
-    foreach ($d in 'Success', 'Warning', 'DangerText', 'TextBody') { Olc 'tepsi simgesi' "rakam $d" 'görev çubuğu (ölçülen)' (T $d) $cubuk $metin }
+    Olc 'tepsi simgesi' 'rakam şarjda' 'görev çubuğu (ölçülen)' (T 'TextBody') $cubuk $metin
+    $pilRenk = $tema.GetMethod('PilRenk')
+    foreach ($y in 0, 12, 25, 37, 50, 62, 75, 87, 100) { Olc 'tepsi simgesi' "rakam %$y" 'görev çubuğu (ölçülen)' ($pilRenk.Invoke($null, [object[]]@([int]$y))) $cubuk $metin }
+    $en = 99; foreach ($y in 0..100) { $o = Oran ($pilRenk.Invoke($null, [object[]]@([int]$y))) $cubuk; if ($o -lt $en) { $en = $o; $enY = $y } }
+    Olc 'tepsi simgesi' "rakam en düşük (%$enY)" 'görev çubuğu (ölçülen), 0-100 tarandı' ($pilRenk.Invoke($null, [object[]]@([int]$enY))) $cubuk $metin
 }
 
 $pt = $asm.GetType('SesPaneli')

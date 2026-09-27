@@ -15,7 +15,7 @@ Headset battery in the Windows tray, for wired, wireless and Bluetooth headsets.
 
 ## What It Is
 
-HeadsetBatteryTray is a single Windows tray program. The tray icon shows the headset battery as a number, colored by level, white while charging, with a warning at 25%. A left click opens a panel; starting the program a second time also opens it.
+HeadsetBatteryTray is a single Windows tray program. The tray icon shows the headset battery as a number, drawn crisp at the real icon size and colored on a scale from green at 100% through blue at 50% to red at 0%, white while charging, with a warning at 25%. A left click opens a panel; starting the program a second time also opens it.
 
 It reads the battery three ways, in order: direct HID for the SteelSeries Arctis Nova Pro Wireless, the bundled [HeadsetControl](https://github.com/Sapd/HeadsetControl) for about 40 wired and dongle headsets (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze and more), and the Windows Bluetooth battery value for Bluetooth headsets. No vendor suite needs to run.
 

@@ -15,7 +15,7 @@ Kablolu, kablosuz ve Bluetooth kulaklıklar için Windows tepsisinde kulaklık p
 
 ## Nedir
 
-HeadsetBatteryTray tek bir Windows tepsi programıdır. Tepsi simgesi kulaklık pilini sayı olarak gösterir; renk seviyeye göre değişir, şarjda beyazdır, %25'te uyarır. Sol tık paneli açar; programı ikinci kez başlatmak da açar.
+HeadsetBatteryTray tek bir Windows tepsi programıdır. Tepsi simgesi kulaklık pilini sayı olarak gösterir; gerçek simge boyutunda keskin çizilir; renk %100 yeşilden %50 maviye, %0 kırmızıya kayar, şarjda beyazdır, %25'te uyarır. Sol tık paneli açar; programı ikinci kez başlatmak da açar.
 
 Pili sırayla üç yoldan okur: SteelSeries Arctis Nova Pro Wireless için doğrudan HID, yaklaşık 40 kablolu ve dongle'lı kulaklık için (SteelSeries, Logitech, Corsair, HyperX, Razer, Roccat, Audeze ve diğerleri) gömülü [HeadsetControl](https://github.com/Sapd/HeadsetControl), Bluetooth kulaklıklar için Windows'un Bluetooth pil değeri. Üretici yazılımının açık olması gerekmez.
 
