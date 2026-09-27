@@ -1,4 +1,4 @@
-﻿Kontrast Ölçümü — 2026-09-27 06:26 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
+﻿Kontrast Ölçümü — 2026-09-27 06:31 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
 
 Ekran         Oge                           Hal                                   On      Zemin    Oran Esik Sonuc
 -----         ---                           ---                                   --      -----    ---- ---- -----
@@ -38,17 +38,17 @@ menü          Teknesyum                     üzerinde                          
 menü          onay işareti                  seçili                                #6FB7FF #000000  9,89    3 geçti
 menü          onay işareti                  üzerinde                              #6FB7FF #162533  7,35    3 geçti
 menü          kenar                         dinlenme                              #3D648C #000000   3,4    3 geçti
-tepsi simgesi rakam şarjda                  görev çubuğu (ölçülen)                #FFFFFF #15262E 15,57    7 geçti
-tepsi simgesi rakam %0                      görev çubuğu (ölçülen)                #FF9898 #15262E  7,56    7 geçti
-tepsi simgesi rakam %12                     görev çubuğu (ölçülen)                #E7A0B8 #15262E   7,5    7 geçti
-tepsi simgesi rakam %25                     görev çubuğu (ölçülen)                #C9AAD5 #15262E  7,56    7 geçti
-tepsi simgesi rakam %37                     görev çubuğu (ölçülen)                #A7B2EA #15262E  7,56    7 geçti
-tepsi simgesi rakam %50                     görev çubuğu (ölçülen)                #75B9FF #15262E  7,52    7 geçti
-tepsi simgesi rakam %62                     görev çubuğu (ölçülen)                #6DC7EC #15262E  8,18    7 geçti
-tepsi simgesi rakam %75                     görev çubuğu (ölçülen)                #6BD6D4 #15262E  9,04    7 geçti
-tepsi simgesi rakam %87                     görev çubuğu (ölçülen)                #68E3BB #15262E  9,86    7 geçti
-tepsi simgesi rakam %100                    görev çubuğu (ölçülen)                #66F09A #15262E 10,75    7 geçti
-tepsi simgesi rakam en düşük (%27)          görev çubuğu (ölçülen), 0-100 tarandı #C3AAD8 #15262E  7,46    7 geçti
+tepsi simgesi rakam şarjda                  görev çubuğu (ölçülen)                #FFFFFF #202A31 14,61    7 geçti
+tepsi simgesi rakam %0                      görev çubuğu (ölçülen)                #FF9898 #202A31   7,1    7 geçti
+tepsi simgesi rakam %12                     görev çubuğu (ölçülen)                #E7A0B8 #202A31  7,04    7 geçti
+tepsi simgesi rakam %25                     görev çubuğu (ölçülen)                #C9AAD5 #202A31  7,09    7 geçti
+tepsi simgesi rakam %37                     görev çubuğu (ölçülen)                #A7B2EA #202A31   7,1    7 geçti
+tepsi simgesi rakam %50                     görev çubuğu (ölçülen)                #75B9FF #202A31  7,06    7 geçti
+tepsi simgesi rakam %62                     görev çubuğu (ölçülen)                #6DC7EC #202A31  7,68    7 geçti
+tepsi simgesi rakam %75                     görev çubuğu (ölçülen)                #6BD6D4 #202A31  8,49    7 geçti
+tepsi simgesi rakam %87                     görev çubuğu (ölçülen)                #68E3BB #202A31  9,25    7 geçti
+tepsi simgesi rakam %100                    görev çubuğu (ölçülen)                #66F09A #202A31 10,09    7 geçti
+tepsi simgesi rakam en düşük (%27)          görev çubuğu (ölçülen), 0-100 tarandı #C3AAD8 #202A31     7    7 geçti
 
 
 

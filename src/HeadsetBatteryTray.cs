@@ -520,7 +520,7 @@ class PilTahmin
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.2";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.3";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
@@ -881,7 +881,7 @@ class Uygulama : ApplicationContext
             foreach (char c in yazi)
             {
                 Rectangle r;
-                glifler.Add(Glif(c, aile, em, out r));
+                glifler.Add(Glif(c, aile, em, yazi.Length < 3 && SystemInformation.FontSmoothingType == 2, out r));
                 kutular.Add(r);
                 w += r.Width + ara;
                 if (r.Height > 0) { ust = Math.Min(ust, r.Top); alt = Math.Max(alt, r.Bottom); }
@@ -895,8 +895,13 @@ class Uygulama : ApplicationContext
                 for (int gy = 0; gy < r.Height; gy++)
                     for (int gx = 0; gx < r.Width; gx++)
                     {
-                        byte a = glifler[i][(r.Top + gy) * GlifKare + r.Left + gx];
-                        if (a > 0) o.SetPixel(x + gx, y + r.Top - ust + gy, Color.FromArgb(a, renk));
+                        int k = ((r.Top + gy) * GlifKare + r.Left + gx) * 3;
+                        byte[] q = glifler[i];
+                        int a = Math.Max(q[k], Math.Max(q[k + 1], q[k + 2]));
+                        if (a == 0) continue;
+                        Color z = Tema.GorevCubugu;
+                        Func<int, int, int, int> kanal = (hedef, zemin, kap) => Math.Max(0, Math.Min(255, zemin + (hedef - zemin) * kap / a));
+                        o.SetPixel(x + gx, y + r.Top - ust + gy, Color.FromArgb(a, kanal(renk.R, z.R, q[k]), kanal(renk.G, z.G, q[k + 1]), kanal(renk.B, z.B, q[k + 2])));
                     }
                 x += r.Width + ara;
             }
@@ -907,27 +912,28 @@ class Uygulama : ApplicationContext
 
     const int GlifKare = 128;
 
-    static byte[] Glif(char c, string aile, float em, out Rectangle kutu)
+    static byte[] Glif(char c, string aile, float em, bool clearType, out Rectangle kutu)
     {
-        byte[] a = new byte[GlifKare * GlifKare];
+        byte[] a = new byte[GlifKare * GlifKare * 3];
         using (Bitmap b = new Bitmap(GlifKare, GlifKare, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
         {
             using (Graphics g = Graphics.FromImage(b))
             using (Font f = new Font(aile, em, FontStyle.Bold, GraphicsUnit.Pixel))
             {
-                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                g.Clear(Color.Black);
+                g.TextRenderingHint = clearType ? System.Drawing.Text.TextRenderingHint.ClearTypeGridFit : System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
                 g.DrawString(c.ToString(), f, Brushes.White, 8, 8, StringFormat.GenericTypographic);
             }
             System.Drawing.Imaging.BitmapData d = b.LockBits(new Rectangle(0, 0, GlifKare, GlifKare), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             byte[] px = new byte[GlifKare * GlifKare * 4];
             Marshal.Copy(d.Scan0, px, 0, px.Length);
             b.UnlockBits(d);
-            for (int i = 0; i < a.Length; i++) a[i] = px[i * 4 + 3];
+            for (int i = 0; i < GlifKare * GlifKare; i++) { a[i * 3] = px[i * 4 + 2]; a[i * 3 + 1] = px[i * 4 + 1]; a[i * 3 + 2] = px[i * 4]; }
         }
         int x0 = GlifKare, y0 = GlifKare, x1 = -1, y1 = -1;
         for (int y = 0; y < GlifKare; y++)
             for (int x = 0; x < GlifKare; x++)
-                if (a[y * GlifKare + x] > 40) { x0 = Math.Min(x0, x); y0 = Math.Min(y0, y); x1 = Math.Max(x1, x); y1 = Math.Max(y1, y); }
+                if (Math.Max(a[(y * GlifKare + x) * 3], Math.Max(a[(y * GlifKare + x) * 3 + 1], a[(y * GlifKare + x) * 3 + 2])) > 40) { x0 = Math.Min(x0, x); y0 = Math.Min(y0, y); x1 = Math.Max(x1, x); y1 = Math.Max(y1, y); }
         kutu = x1 < 0 ? Rectangle.Empty : Rectangle.FromLTRB(x0, y0, x1 + 1, y1 + 1);
         return a;
     }
