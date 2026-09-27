@@ -1,0 +1,67 @@
+﻿Kontrast Ölçümü — 2026-09-27 18:38 — bin\HeadsetBatteryTray.exe içindeki Tema değerleri
+
+Ekran         Oge                           Hal                                   On      Zemin    Oran Esik Sonuc
+-----         ---                           ---                                   --      -----    ---- ---- -----
+panel         etiket                        dinlenme                              #4DA6FF #000000  8,21    7 geçti
+panel         değer                         dinlenme                              #FFFFFF #000000    21    7 geçti
+panel         pil değeri %0                 dinlenme                              #FF9898 #000000  10,2    7 geçti
+panel         pil değeri %25                dinlenme                              #C7A9D9 #000000 10,11    7 geçti
+panel         pil değeri %50                dinlenme                              #6FB9FF #000000 10,06    7 geçti
+panel         pil değeri %75                dinlenme                              #5BCFD4 #000000 11,32    7 geçti
+panel         pil değeri %100               dinlenme                              #66F09A #000000  14,5    7 geçti
+panel         pil değeri şarjda             dinlenme                              #4DA6FF #000000  8,21    7 geçti
+panel         ipucu metni                   boş/hata                              #FFFFFF #000000    21    7 geçti
+panel         segment metni                 dinlenme                              #FFFFFF #0F2133 16,33    7 geçti
+panel         segment metni                 üzerinde                              #FFFFFF #17324D 13,13    7 geçti
+panel         segment metni                 seçili                                #000000 #4DA6FF  8,21    7 geçti
+panel         düğme metni                   dinlenme/üzerinde/basılı/odak         #000000 #4DA6FF  8,21    7 geçti
+panel         odak halkası                  odak                                  #4DA6FF #000000  8,21    3 geçti
+panel         çubuk/segment kenarı          dinlenme                              #3675B3 #000000  4,35    3 geçti
+panel         pencere kenarı                dinlenme                              #3675B3 #000000  4,35    3 geçti
+panel         çubuk dolgusu Renk1           dinlenme                              #4DA6FF #0F2133  6,39    3 geçti
+panel         çubuk dolgusu Renk1           üzerinde                              #4DA6FF #17324D  5,13    3 geçti
+panel         çubuk dolgusu Renk3           dinlenme                              #B68FFF #0F2133   6,5    3 geçti
+panel         çubuk dolgusu Renk3           üzerinde                              #B68FFF #17324D  5,23    3 geçti
+panel         çubuk dolgusu Success         dinlenme                              #66F09A #0F2133 11,27    3 geçti
+panel         çubuk dolgusu Success         üzerinde                              #66F09A #17324D  9,06    3 geçti
+panel         çubuk dolgusu Danger          dinlenme                              #DE7EF1 #0F2133   6,5    3 geçti
+panel         çubuk dolgusu Danger          üzerinde                              #DE7EF1 #17324D  5,23    3 geçti
+panel         seçili segment                seçili                                #4DA6FF #000000  8,21    3 geçti
+panel         düğme dolgusu                 dinlenme                              #4DA6FF #000000  8,21    3 geçti
+panel         ikincil düğme metni (kapalı)  dinlenme/üzerinde/basılı/odak         #FFFFFF #0F2133 16,33    7 geçti
+panel         ikincil düğme kenarı (kapalı) dinlenme                              #3675B3 #000000  4,35    3 geçti
+menü          öğe metni                     dinlenme                              #FFFFFF #000000    21    7 geçti
+menü          öğe metni                     üzerinde/klavye seçimi                #FFFFFF #0F2133 16,33    7 geçti
+menü          bilgi satırı (etkisiz)        dinlenme                              #FFFFFF #000000    21    7 geçti
+menü          Teknesyum                     dinlenme                              #4DA6FF #000000  8,21    7 geçti
+menü          Teknesyum                     üzerinde                              #FFFFFF #0F2133 16,33    7 geçti
+menü          onay işareti                  seçili                                #4DA6FF #000000  8,21    3 geçti
+menü          onay işareti                  üzerinde                              #4DA6FF #0F2133  6,39    3 geçti
+menü          kenar                         dinlenme                              #3675B3 #000000  4,35    3 geçti
+tepsi simgesi rakam şarjda                  görev çubuğu (ölçülen)                #FFFFFF #15232A 16,08    7 geçti
+tepsi simgesi rakam %0                      görev çubuğu (ölçülen)                #FF9898 #15232A  7,81    7 geçti
+tepsi simgesi rakam %12                     görev çubuğu (ölçülen)                #E6A0BA #15232A  7,74    7 geçti
+tepsi simgesi rakam %25                     görev çubuğu (ölçülen)                #C7A9D9 #15232A  7,74    7 geçti
+tepsi simgesi rakam %37                     görev çubuğu (ölçülen)                #A6B1EA #15232A  7,73    7 geçti
+tepsi simgesi rakam %50                     görev çubuğu (ölçülen)                #6FB9FF #15232A   7,7    7 geçti
+tepsi simgesi rakam %62                     görev çubuğu (ölçülen)                #60BFEC #15232A  7,78    7 geçti
+tepsi simgesi rakam %75                     görev çubuğu (ölçülen)                #5BCFD4 #15232A  8,67    7 geçti
+tepsi simgesi rakam %87                     görev çubuğu (ölçülen)                #60E0BB #15232A  9,86    7 geçti
+tepsi simgesi rakam %100                    görev çubuğu (ölçülen)                #66F09A #15232A  11,1    7 geçti
+tepsi simgesi rakam en düşük (%50)          görev çubuğu (ölçülen), 0-100 tarandı #6FB9FF #15232A   7,7    7 geçti
+
+
+
+Piksel doğrulaması (100%, gerçek render)
+
+Nokta                     Beklenen Olculen Fark Sonuc
+-----                     -------- ------- ---- -----
+segment zemini (üzerinde) #17324D  #17324D    0 geçti
+segment zemini (dinlenme) #0F2133  #0F2133    0 geçti
+segment zemini (seçili)   #4DA6FF  #4DA6FF    0 geçti
+çubuk izi (boş kısım)     #0F2133  #0F2133    0 geçti
+panel zemini              #000000  #000000    0 geçti
+
+
+
+hata: 0

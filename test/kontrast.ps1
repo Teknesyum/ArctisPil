@@ -37,8 +37,8 @@ Olc 'panel' 'segment metni' 'üzerinde' (T 'TextBody') $r30 $metin
 Olc 'panel' 'segment metni' 'seçili' (T 'Surface') (T 'Renk1') $metin
 Olc 'panel' 'düğme metni' 'dinlenme/üzerinde/basılı/odak' (T 'Surface') (T 'Renk1') $metin
 Olc 'panel' 'odak halkası' 'odak' (T 'FocusRing') $yuzey $nesne
-Olc 'panel' 'çubuk/segment kenarı' 'dinlenme' (T 'BorderDefault') $yuzey $nesne
-Olc 'panel' 'pencere kenarı' 'dinlenme' (T 'BorderDefault') $yuzey $nesne
+Olc 'panel' 'çubuk/segment kenarı' 'dinlenme' (T 'BorderStrong') $yuzey $nesne
+Olc 'panel' 'pencere kenarı' 'dinlenme' (T 'BorderStrong') $yuzey $nesne
 foreach ($d in 'Renk1', 'Renk3', 'Success', 'Danger') {
     Olc 'panel' "çubuk dolgusu $d" 'dinlenme' (T $d) $r20 $nesne
     Olc 'panel' "çubuk dolgusu $d" 'üzerinde' (T $d) $r30 $nesne
@@ -46,15 +46,15 @@ foreach ($d in 'Renk1', 'Renk3', 'Success', 'Danger') {
 Olc 'panel' 'seçili segment' 'seçili' (T 'Renk1') $yuzey $nesne
 Olc 'panel' 'düğme dolgusu' 'dinlenme' (T 'Renk1') $yuzey $nesne
 Olc 'panel' 'ikincil düğme metni (kapalı)' 'dinlenme/üzerinde/basılı/odak' (T 'TextBody') $r20 $metin
-Olc 'panel' 'ikincil düğme kenarı (kapalı)' 'dinlenme' (T 'BorderDefault') $yuzey $nesne
+Olc 'panel' 'ikincil düğme kenarı (kapalı)' 'dinlenme' (T 'BorderStrong') $yuzey $nesne
 Olc 'menü' 'öğe metni' 'dinlenme' (T 'TextBody') $yuzey $metin
 Olc 'menü' 'öğe metni' 'üzerinde/klavye seçimi' (T 'TextBody') $r20 $metin
 Olc 'menü' 'bilgi satırı (etkisiz)' 'dinlenme' (T 'TextBody') $yuzey $metin
 Olc 'menü' 'Teknesyum' 'dinlenme' (T 'Renk1') $yuzey $metin
-Olc 'menü' 'Teknesyum' 'üzerinde' (T 'Renk1') $r20 $metin
+Olc 'menü' 'Teknesyum' 'üzerinde' (T 'TextBody') $r20 $metin
 Olc 'menü' 'onay işareti' 'seçili' (T 'Renk1') $yuzey $nesne
 Olc 'menü' 'onay işareti' 'üzerinde' (T 'Renk1') $r20 $nesne
-Olc 'menü' 'kenar' 'dinlenme' (T 'BorderDefault') $yuzey $nesne
+Olc 'menü' 'kenar' 'dinlenme' (T 'BorderStrong') $yuzey $nesne
 
 $ekran = [Windows.Forms.Screen]::PrimaryScreen
 $gorev = $ekran.Bounds.Bottom - $ekran.WorkingArea.Bottom

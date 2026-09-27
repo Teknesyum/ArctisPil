@@ -521,7 +521,7 @@ class PilTahmin
 
 class Uygulama : ApplicationContext
 {
-    public const string Ad = "HeadsetBatteryTray", Surum = "0.4.4";
+    public const string Ad = "HeadsetBatteryTray", Surum = "0.5.0";
     const string RunAnahtar = @"Software\Microsoft\Windows\CurrentVersion\Run";
     const string RunAd = Ad, EskiRunAd = "ArctisPil";
 
@@ -1063,7 +1063,7 @@ static class Tema
     public static readonly Color TextBody = Palette.TextBody;
     public static readonly Color TextLabel = Palette.TextLabel;
     public static readonly Color FocusRing = Palette.FocusRing;
-    public static readonly Color BorderDefault = Palette.BorderDefault;
+    public static readonly Color BorderStrong = Palette.BorderStrong;
     public static readonly Color BorderDecorative = Palette.BorderDecorative;
     public static readonly Color Renk1Yuzde20 = Ton.Renk1Yuzde20;
     public static readonly Color Renk1Yuzde30 = Ton.Renk1Yuzde30;
@@ -1208,7 +1208,7 @@ class MenuTemasi : ToolStripProfessionalRenderer
 
     protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Tema.Surface)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
     protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { using (SolidBrush b = new SolidBrush(Tema.Surface)) e.Graphics.FillRectangle(b, e.AffectedBounds); }
-    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { using (Pen p = new Pen(Tema.BorderDefault)) e.Graphics.DrawRectangle(p, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1); }
+    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e) { using (Pen p = new Pen(Tema.BorderStrong)) e.Graphics.DrawRectangle(p, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1); }
 
     protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
     {
@@ -1224,7 +1224,7 @@ class MenuTemasi : ToolStripProfessionalRenderer
 
     protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
     {
-        TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.Item.Enabled ? e.Item.ForeColor : Tema.TextBody, e.TextFormat);
+        TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle, e.Item.Enabled && !e.Item.Selected ? e.Item.ForeColor : Tema.TextBody, e.TextFormat);
     }
 
     protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
@@ -1558,7 +1558,7 @@ class SesPaneli : Form
     {
         RectangleF r = CubukAlan(o);
         Doldur(g, r, Tema.Karistir(Tema.Renk1Yuzde20, Tema.Renk1Yuzde30, o == uzerinde ? o.Uzerinde.Deger : 0));
-        Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
+        Cerceve(g, r, Tema.BorderStrong, D(Tema.BorderWidth), D(Tema.Radius));
         float v = o.Dolu.Deger;
         if (v <= 0) return;
         float w = Math.Max(r.Height, r.Width * Math.Min(1f, v));
@@ -1580,7 +1580,7 @@ class SesPaneli : Form
             RectangleF r = Hucre(o, i);
             float u = o == uzerinde && o.UzerindeSec == i ? o.Uzerinde.Deger : 0;
             Doldur(g, r, Tema.Karistir(Tema.Renk1Yuzde20, Tema.Renk1Yuzde30, u));
-            Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
+            Cerceve(g, r, Tema.BorderStrong, D(Tema.BorderWidth), D(Tema.Radius));
         }
         float s = o.Kay.Deger;
         if (s >= 0) Doldur(g, Hucre(o, s), Tema.Renk1);
@@ -1596,7 +1596,7 @@ class SesPaneli : Form
         if (pilHal == "kapalı")
         {
             Doldur(g, r, Tema.Renk1Yuzde20);
-            Cerceve(g, r, Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.Radius));
+            Cerceve(g, r, Tema.BorderStrong, D(Tema.BorderWidth), D(Tema.Radius));
             Yaz(g, o.Ad, fDugme, Tema.TextBody, r, StringAlignment.Center, StringAlignment.Center, false);
             return;
         }
@@ -1630,7 +1630,7 @@ class SesPaneli : Form
         g.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
         g.Clear(Tema.Surface);
         int k = D(Tema.PanelPadding), gen = ClientSize.Width;
-        Cerceve(g, new RectangleF(0, 0, gen, ClientSize.Height), Tema.BorderDefault, D(Tema.BorderWidth), D(Tema.WindowRadius));
+        Cerceve(g, new RectangleF(0, 0, gen, ClientSize.Height), Tema.BorderStrong, D(Tema.BorderWidth), D(Tema.WindowRadius));
         if (ayrac >= 0) using (Pen p = new Pen(Tema.BorderDecorative, D(Tema.BorderWidth))) g.DrawLine(p, k, ayrac, gen - k, ayrac);
         foreach (Oge o in ogeler)
         {
