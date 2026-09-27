@@ -869,8 +869,35 @@ class Uygulama : ApplicationContext
         }
     }
 
+    static readonly Dictionary<char, string[]> PikselGenis = new Dictionary<char, string[]> { { '0', new[] { ".+###+.", "+#####+", "##...##", "##...##", "##...##", "##...##", "##...##", "##...##", "##...##", "##...##", "+#####+", ".+###+." } }, { '1', new[] { "..+##..", ".+###..", "+####..", "##.##..", "...##..", "...##..", "...##..", "...##..", "...##..", "...##..", "...##..", "...##.." } }, { '2', new[] { ".+###+.", "+#####+", "##...##", ".....##", "....+##", "...+##+", "..+##+.", ".+##+..", "+##+...", "##.....", "#######", "#######" } }, { '3', new[] { ".+###+.", "+#####+", "##...##", ".....##", ".....##", "..####+", "..####+", ".....##", ".....##", "##...##", "+#####+", ".+###+." } }, { '4', new[] { "##...##", "##...##", "##...##", "##...##", "##...##", "##...##", "#######", "#######", ".....##", ".....##", ".....##", ".....##" } }, { '5', new[] { "#######", "#######", "##.....", "##.....", "#####+.", "######+", ".....##", ".....##", ".....##", "##...##", "+#####+", ".+###+." } }, { '6', new[] { ".+###+.", "+#####+", "##...##", "##.....", "##.....", "######+", "#######", "##...##", "##...##", "##...##", "+#####+", ".+###+." } }, { '7', new[] { "#######", "#######", ".....##", "....+##", "....##+", "...+##.", "...##+.", "..+##..", "..##+..", "..##...", "..##...", "..##..." } }, { '8', new[] { ".+###+.", "+#####+", "##...##", "##...##", "+#...#+", ".#####.", "+#####+", "##...##", "##...##", "##...##", "+#####+", ".+###+." } }, { '9', new[] { ".+###+.", "+#####+", "##...##", "##...##", "##...##", "#######", "+######", ".....##", ".....##", "##...##", "+#####+", ".+###+." } }, { '–', new[] { ".......", ".......", ".......", ".......", ".......", "#######", "#######", ".......", ".......", ".......", ".......", "......." } }, { '?', new[] { ".+###+.", "+#####+", "##...##", ".....##", "....+##", "...+##+", "...##+.", "...##..", "...##..", ".......", "...##..", "...##.." } } };
+    static readonly Dictionary<char, string[]> PikselDar = new Dictionary<char, string[]> { { '1', new[] { ".##", "###", "+##", ".##", ".##", ".##", ".##", ".##", ".##", ".##", ".##", ".##" } }, { '0', new[] { "+###+", "##+##", "##.##", "##.##", "##.##", "##.##", "##.##", "##.##", "##.##", "##.##", "##+##", "+###+" } } };
+
+    static Bitmap PikselRakam(string yazi, Color renk, int n)
+    {
+        Dictionary<char, string[]> set = yazi.Length >= 3 ? PikselDar : PikselGenis;
+        if (yazi.Any(c => !set.ContainsKey(c))) return null;
+        int w = yazi.Sum(c => set[c][0].Length) + yazi.Length - 1, h = set[yazi[0]].Length;
+        if (w > n || h > n) return null;
+        Bitmap o = new Bitmap(n, n, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        int x = (n - w) / 2, y = (n - h) / 2;
+        foreach (char c in yazi)
+        {
+            string[] g = set[c];
+            for (int gy = 0; gy < g.Length; gy++)
+                for (int gx = 0; gx < g[gy].Length; gx++)
+                {
+                    char p = g[gy][gx];
+                    if (p != '.') o.SetPixel(x + gx, y + gy, Color.FromArgb(p == '#' ? 255 : 128, renk));
+                }
+            x += g[0].Length + 1;
+        }
+        return o;
+    }
+
     static Bitmap Rakam(string yazi, Color renk, int n)
     {
+        Bitmap piksel = PikselRakam(yazi, renk, n);
+        if (piksel != null) return piksel;
         string[] adaylar = { "Bahnschrift Condensed", "Bahnschrift", "Segoe UI" };
         string aile = adaylar.First(a => a == "Segoe UI" || FontFamily.Families.Any(f => f.Name == a));
         for (float em = n * 2.2f; em >= 6; em -= 0.5f)
@@ -881,7 +908,7 @@ class Uygulama : ApplicationContext
             foreach (char c in yazi)
             {
                 Rectangle r;
-                glifler.Add(Glif(c, aile, em, yazi.Length < 3 && SystemInformation.FontSmoothingType == 2, out r));
+                glifler.Add(Glif(c, aile, em, out r));
                 kutular.Add(r);
                 w += r.Width + ara;
                 if (r.Height > 0) { ust = Math.Min(ust, r.Top); alt = Math.Max(alt, r.Bottom); }
@@ -899,9 +926,7 @@ class Uygulama : ApplicationContext
                         byte[] q = glifler[i];
                         int a = Math.Max(q[k], Math.Max(q[k + 1], q[k + 2]));
                         if (a == 0) continue;
-                        Color z = Tema.GorevCubugu;
-                        Func<int, int, int, int> kanal = (hedef, zemin, kap) => Math.Max(0, Math.Min(255, zemin + (hedef - zemin) * kap / a));
-                        o.SetPixel(x + gx, y + r.Top - ust + gy, Color.FromArgb(a, kanal(renk.R, z.R, q[k]), kanal(renk.G, z.G, q[k + 1]), kanal(renk.B, z.B, q[k + 2])));
+                        o.SetPixel(x + gx, y + r.Top - ust + gy, Color.FromArgb(a, renk));
                     }
                 x += r.Width + ara;
             }
@@ -912,7 +937,7 @@ class Uygulama : ApplicationContext
 
     const int GlifKare = 128;
 
-    static byte[] Glif(char c, string aile, float em, bool clearType, out Rectangle kutu)
+    static byte[] Glif(char c, string aile, float em, out Rectangle kutu)
     {
         byte[] a = new byte[GlifKare * GlifKare * 3];
         using (Bitmap b = new Bitmap(GlifKare, GlifKare, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
@@ -921,7 +946,7 @@ class Uygulama : ApplicationContext
             using (Font f = new Font(aile, em, FontStyle.Bold, GraphicsUnit.Pixel))
             {
                 g.Clear(Color.Black);
-                g.TextRenderingHint = clearType ? System.Drawing.Text.TextRenderingHint.ClearTypeGridFit : System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
                 g.DrawString(c.ToString(), f, Brushes.White, 8, 8, StringFormat.GenericTypographic);
             }
             System.Drawing.Imaging.BitmapData d = b.LockBits(new Rectangle(0, 0, GlifKare, GlifKare), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
