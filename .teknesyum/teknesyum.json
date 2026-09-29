@@ -1,0 +1,76 @@
+{
+  "name": "HeadsetBatteryTray",
+  "category": "system",
+  "asset": "HeadsetBatteryTray.exe",
+  "method": "portable",
+  "run": "HeadsetBatteryTray.exe",
+  "icon": ".teknesyum/icon.png",
+  "screenshot": ".teknesyum/shot.jpg",
+  "catalog": {
+    "category": "system",
+    "tags": {
+      "tr": [
+        "kulaklık",
+        "pil",
+        "sistem-tepsisi",
+        "steelseries"
+      ],
+      "en": [
+        "headset",
+        "battery",
+        "tray",
+        "steelseries"
+      ]
+    },
+    "summary": {
+      "tr": "Kablolu, kablosuz ve Bluetooth kulaklıkların pil düzeyini Windows sistem tepsisinde renkli bir sayı olarak gösteren hafif bir program. Pili doğrudan HID, beraberinde gelen HeadsetControl ya da Windows Bluetooth üzerinden okur ve kırk kadar kulaklık modelini tanır. SteelSeries Arctis Nova Pro Wireless için ses düzeyi, gürültü engelleme, şeffaflık ve mikrofon ayarlarını tek pencerede toplar; kulaklık ile Windows arasında ses aktarımı ve yüzde birlik pil tahmini yapar. Kurulum gerektirmeyen tek bir exe.",
+      "en": "A lightweight program that shows the battery level of wired, wireless and Bluetooth headsets as a coloured number in the Windows tray. It reads the battery through direct HID, the bundled HeadsetControl or Windows Bluetooth, covering about forty headset models. For the SteelSeries Arctis Nova Pro Wireless it adds a panel for volume, noise cancelling, transparency and microphone level, moves volume between the headset and Windows, and estimates battery to the percent. A single exe with no install."
+    },
+    "points": {
+      "tr": [
+        "Sistem tepsisinde pil yüzdesini rakam olarak gösterir",
+        "Şarj ve düşük pil için renk ve uyarı kodlaması",
+        "Nova Pro için tam panel: pil, ses, ANC, şeffaflık, mikrofon",
+        "Kulaklık-Windows arası ses seviyesi aktarımı (%20-80)",
+        "Cihazın %12,5'lik adımları arası %1 pil tahmini",
+        "Üç kaynaktan pil okuma: doğrudan HID, HeadsetControl, Bluetooth",
+        "HeadsetControl ile ~40 kablolu/dongle kulaklık desteği",
+        "Tam klavye kontrolü ve ekran ölçeğine uyum",
+        "Ayarlar cihaza kaydedilir, güç kesintisinde kalıcı",
+        "Windows ile otomatik başlatma",
+        "Bağımlılıksız, .NET Framework 4 ile çalışır"
+      ],
+      "en": [
+        "Tray icon shows battery percentage as a digit",
+        "Color and warning coding for charge and low battery",
+        "Full panel for Nova Pro: battery, volume, ANC, transparency, mic",
+        "Volume transfer between headset and Windows (20-80%)",
+        "1% battery estimate between the device's 12.5% steps",
+        "Reads battery from three sources: direct HID, HeadsetControl, Bluetooth",
+        "Supports about 40 wired/dongle headsets via HeadsetControl",
+        "Full keyboard control and display-scale awareness",
+        "Settings saved to the device, survive power cycles",
+        "Starts automatically with Windows",
+        "Zero dependencies, runs on .NET Framework 4"
+      ]
+    },
+    "uses": {
+      "tr": [
+        "Kulaklık pilini tepside rakamla gör",
+        "Düşük pilde renkli uyarı al",
+        "Nova Pro'yu tek panelden yönet",
+        "Windows'la birlikte başlat"
+      ],
+      "en": [
+        "See headset battery in the tray",
+        "Get colour alerts on low battery",
+        "Control Nova Pro from one panel",
+        "Start it with Windows"
+      ]
+    },
+    "lead": {
+      "tr": "Kulaklık Pili Tepsi Göstergesi ve Nova Pro Kontrol Paneli",
+      "en": "Headset Battery Tray Indicator and Nova Pro Control Panel"
+    }
+  }
+}
