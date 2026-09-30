@@ -59,6 +59,15 @@ Panel klavyeyle kullanılır: Tab ya da ok tuşları satırlar arasında gezer, 
 
 ## Kurulum
 
+**Önerilen: Teknesyum Base (Windows).**
+
+1. [`Teknesyum-Base.exe`](https://github.com/Teknesyum/Teknesyum-Base/releases/latest/download/Teknesyum-Base.exe) dosyasını ([`.sha256`](https://github.com/Teknesyum/Teknesyum-Base/releases/latest/download/Teknesyum-Base.exe.sha256)) indirip çalıştırın. Yönetici hakkı gerekmez.
+2. Listeden **HeadsetBatteryTray** uygulamasını bulup kurun. Base sonradan güncellemeyi ve kaldırmayı da yapar.
+
+Base henüz imzalı değil; Windows SmartScreen ilk açılışta uyarabilir: *Diğer bilgiler*'i, sonra *Yine de çalıştır*'ı seçin. Ayrıntı: [Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base).
+
+**Ya da elle kurun.**
+
 [Son sürümden](../../releases/latest) `HeadsetBatteryTray.exe` dosyasını indirip çalıştırın. Kendini başlangıca ekler; durdurmak için sağ tık menüsünde "Windows ile başlat" işaretini kaldırın. Sürüm, sağ tık menüsünün en üstünde ve exe'nin dosya özelliklerinde yazar.
 
 [Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base) üzerinden de kurulur (depodaki `teknesyum.json`). Program `%LOCALAPPDATA%\HeadsetBatteryTray` içindeki bir kopyadan çalışır, indirilen exe hiç kilitlenmez: exe değişince yeni sürümle yeniden başlar, silinince başlangıç kaydını, ayarlarını ve verisini kaldırıp kapanır.

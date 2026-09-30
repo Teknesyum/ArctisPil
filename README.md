@@ -59,6 +59,15 @@ The panel works from the keyboard: Tab or the arrow keys move between rows, Left
 
 ## Install
 
+**Recommended: Teknesyum Base (Windows).**
+
+1. Download [`Teknesyum-Base.exe`](https://github.com/Teknesyum/Teknesyum-Base/releases/latest/download/Teknesyum-Base.exe) ([`.sha256`](https://github.com/Teknesyum/Teknesyum-Base/releases/latest/download/Teknesyum-Base.exe.sha256)) and run it. No admin rights are needed.
+2. Find **HeadsetBatteryTray** in the list and install it. Base also updates and removes it later.
+
+Base is not code-signed yet, so Windows SmartScreen may warn on first launch: choose *More info*, then *Run anyway*. More: [Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base).
+
+**Or install manually.**
+
 Download `HeadsetBatteryTray.exe` from the [latest release](../../releases/latest) and run it. It adds itself to startup; untick "Windows ile başlat" in the right-click menu to stop that. The version is shown at the top of the right-click menu and in the exe's file properties.
 
 It also installs from [Teknesyum Base](https://github.com/Teknesyum/Teknesyum-Base) (`teknesyum.json` in this repo). The program runs from a copy in `%LOCALAPPDATA%\HeadsetBatteryTray`, so the downloaded exe is never locked: when it is replaced it restarts on the new version, and when it is deleted it removes its startup entry, settings and data, then exits.
